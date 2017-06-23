@@ -13,18 +13,12 @@ ARCHITECTURE IDEAS
 
   
 NOTES
-
-Main calling function is run_cs_processing.m
-
-Dependencies (most of them) are in /private directory. These may include HFRProgs and 
-other common stuff
-
-.m files use functions as blocks of code - code folding (cmd =) makes it easy to move 
-among these.
+- Main calling function is run_cs_processing.m
+- Dependencies (most of them) are in /private directory. These may include HFRProgs and other common stuff
+- .m files use functions as blocks of code - code folding (cmd =) makes it easy to move among these.
 
 
 DATA STRUCTURES
-
 - Contain variables of similar scope, rows = locations, cols = time
 - Initialized with appropriately named function (e.g. doa_struct.m) to enable 
   standardization
