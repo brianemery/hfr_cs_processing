@@ -16,9 +16,11 @@ finding methods.
   part is a work in progress for other arrays. 
 
 
+
 HOW TO USE IT
 - download it and add the unzipped directory to your MATLAB path
 - start with run_cs_processing.m 
+
 
 
 TO DO
@@ -28,7 +30,9 @@ TO DO
 - Arbitrary arrays need a detection method (that is, single bearing vs dual
   vs ... etc). 
 
+
 ACKNOWLEDGMENT
+
 The release is self contained but includes code from the following people
 and or toolboxes. HFRProgs [1] by David Kaplan set the standard and data
 structures here follow the same basic formatting. I've include a few mfiles
@@ -39,7 +43,9 @@ from CODAR Ocean Sensors for reading cross spectra files.
 [1] https://github.com/rowg/hfrprogs
 [2] https://github.com/akirincich/imageFOLs
 
+
 REFERENCES
+
 Lipa, B., B. Nyden, D. S. Ullman, and E. Terrill, (2006). SeaSonde radial 
   velocities: Derivation and internal consistency.
   IEEE Journal of Oceanic Engineering, 31 (4) 850?861.
@@ -55,6 +61,7 @@ Emery, B. (2018). Evaluation of Alternative Direction of Arrival Methods
 
 
 ARCHITECTURE GOALS
+
 - could follow range processing
 - arbitrary array geometry, fft length, etc
 - arbitrary doa method 
@@ -62,7 +69,9 @@ ARCHITECTURE GOALS
 - tests using Anthony's data for validation, but also could build some
   edge case tests using simiulations (eg 0-360 transition, etc)
 
+
 NOTES
+
 - .m files use functions as blocks of code - code folding (cmd =) makes it easy to move among these.
 - Data structures contain variables of similar origin following the HFRProgs
   convention, rows = locations, cols = time
@@ -70,8 +79,9 @@ NOTES
   (e.g. doa_struct.m) to enable standardization
 
 
+
 CODING PRINCIPLES
-(The goal, if not the reality)
+
 - Minimize repetition (dont repeat yourself)
 - Make code re-usable and recyclable. Make general functions. 
 - Code should be pretty and readable sentences and paragraphs, aid the reader when
