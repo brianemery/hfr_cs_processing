@@ -1,7 +1,8 @@
 ## HFR CS PROCESSING TOOLBOX ##
 
-Copyright (C) 2018 Brian Emery, Ph.D
+by Brian Emery, Ph.D
 
+Oct. 8, 2018
 
 Tools for processing oceanographic HF radar cross spectra with direction
 finding methods. 
@@ -29,11 +30,19 @@ TO DO
 - I need to add a demo/test, e.g. using Anthony's data for validation, but
   also could build some edge case tests using simiulations (eg 0-360 
   transition, etc)
-
+- Arbitrary arrays need a detection method (that is, single bearing vs dual
+  vs ... etc). 
 
 ACKNOWLEDGMENT
-- AK, HFRP, COS
+The release is self contained but includes code from the following people
+and or toolboxes. HFRProgs [1] by David Kaplan set the standard and data
+structures here follow the same basic formatting. I've include a few mfiles
+from HFRprogs as dependencies. As mentioned above, this toolbox can use 
+imageFOL by Anthony Kirincich [2]. Finally, the release include code obtained
+from CODAR Ocean Sensors for reading cross spectra files. 
 
+[1] https://github.com/rowg/hfrprogs
+[2] https://github.com/akirincich/imageFOLs
 
 REFERENCES
 Lipa, B., B. Nyden, D. S. Ullman, and E. Terrill, (2006). SeaSonde radial 
