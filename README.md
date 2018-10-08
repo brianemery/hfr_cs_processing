@@ -1,14 +1,8 @@
 ## HFR CS PROCESSING TOOLBOX ##
 
-by Brian Emery, Ph.D
-
-Oct. 8, 2018
-
 Tools for processing oceanographic HF radar cross spectra with direction
 finding methods. 
 
-
-WHAT THIS DOES
 - Provides research quality software for processing HFR data following the
   methods of Lipe et al. (2006).
 - Employs a home made ship removal algorithm that follows what is known 
@@ -23,6 +17,7 @@ WHAT THIS DOES
 
 
 HOW TO USE IT
+- download it and add the unzipped directory to your MATLAB path
 - start with run_cs_processing.m 
 
 
