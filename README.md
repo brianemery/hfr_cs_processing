@@ -46,18 +46,18 @@ from CODAR Ocean Sensors for reading cross spectra files.
 
 REFERENCES
 
-Lipa, B., B. Nyden, D. S. Ullman, and E. Terrill, (2006). SeaSonde radial 
-;&nbsp;&nbsp;velocities: Derivation and internal consistency.
-;&nbsp;&nbsp;IEEE Journal of Oceanic Engineering, 31 (4) 850?861.
-Stoica, P., & Nehorai, A. (1989). MUSIC, maximum likelihood, and 
-;&nbsp;&nbsp;Cramer-Rao bound. IEEE Transactions on Acoustics, Speech, and Signal 
-;&nbsp;&nbsp;Processing, 37(5), 720-741.
-Emery, B. and Washburn, L. (2018). Uncertainty Estimates for SeaSonde HF 
-;&nbsp;&nbsp;Radar Ocean Current Observations. Journal of Atmospheric and Oceanic 
-;&nbsp;&nbsp;Technology, Submitted.
-Emery, B. (2018). Evaluation of Alternative Direction of Arrival Methods
-;&nbsp;&nbsp;for Oceanographic HF Radars. IEEE Journal of Oceanic Engineering, 
-;&nbsp;&nbsp;Submitted.
+Lipa, B., B. Nyden, D. S. Ullman, and E. Terrill, (2006). SeaSonde radial   
+&nbsp;&nbsp;velocities: Derivation and internal consistency.  
+&nbsp;&nbsp;IEEE Journal of Oceanic Engineering, 31 (4) 850?861.  
+Stoica, P., & Nehorai, A. (1989). MUSIC, maximum likelihood, and  
+&nbsp;&nbsp;Cramer-Rao bound. IEEE Transactions on Acoustics, Speech, and Signal     
+&nbsp;&nbsp;Processing, 37(5), 720-741.  
+Emery, B. and Washburn, L. (2018). Uncertainty Estimates for SeaSonde HF   
+&nbsp;&nbsp;Radar Ocean Current Observations. Journal of Atmospheric and Oceanic   
+&nbsp;&nbsp;Technology, Submitted.  
+Emery, B. (2018). Evaluation of Alternative Direction of Arrival Methods  
+&nbsp;&nbsp;for Oceanographic HF Radars. IEEE Journal of Oceanic Engineering,   
+&nbsp;&nbsp;Submitted.  
 
 
 ARCHITECTURE GOALS
