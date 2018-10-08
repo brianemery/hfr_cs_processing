@@ -1,5 +1,7 @@
 ## HFR CS PROCESSING TOOLBOX ##
 
+[![DOI](https://zenodo.org/badge/84593561.svg)](https://zenodo.org/badge/latestdoi/84593561)
+
 Tools for processing oceanographic HF radar cross spectra with direction
 finding methods. 
 
