@@ -40,24 +40,24 @@ from HFRprogs as dependencies. As mentioned above, this toolbox can use
 imageFOL by Anthony Kirincich [2]. Finally, the release include code obtained
 from CODAR Ocean Sensors for reading cross spectra files. 
 
-[1] https://github.com/rowg/hfrprogs
-[2] https://github.com/akirincich/imageFOLs
+[1] https://github.com/rowg/hfrprogs\
+[2] https://github.com/akirincich/imageFOLs\  
 
 
 REFERENCES
 
 Lipa, B., B. Nyden, D. S. Ullman, and E. Terrill, (2006). SeaSonde radial 
-  velocities: Derivation and internal consistency.
-  IEEE Journal of Oceanic Engineering, 31 (4) 850?861.
+;&nbsp;&nbsp;velocities: Derivation and internal consistency.
+;&nbsp;&nbsp;IEEE Journal of Oceanic Engineering, 31 (4) 850?861.
 Stoica, P., & Nehorai, A. (1989). MUSIC, maximum likelihood, and 
-  Cramer-Rao bound. IEEE Transactions on Acoustics, Speech, and Signal 
-  Processing, 37(5), 720-741.
+;&nbsp;&nbsp;Cramer-Rao bound. IEEE Transactions on Acoustics, Speech, and Signal 
+;&nbsp;&nbsp;Processing, 37(5), 720-741.
 Emery, B. and Washburn, L. (2018). Uncertainty Estimates for SeaSonde HF 
-  Radar Ocean Current Observations. Journal of Atmospheric and Oceanic 
-  Technology, Submitted.
+;&nbsp;&nbsp;Radar Ocean Current Observations. Journal of Atmospheric and Oceanic 
+;&nbsp;&nbsp;Technology, Submitted.
 Emery, B. (2018). Evaluation of Alternative Direction of Arrival Methods
-  for Oceanographic HF Radars. IEEE Journal of Oceanic Engineering, 
-  Submitted.
+;&nbsp;&nbsp;for Oceanographic HF Radars. IEEE Journal of Oceanic Engineering, 
+;&nbsp;&nbsp;Submitted.
 
 
 ARCHITECTURE GOALS
