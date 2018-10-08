@@ -1,4 +1,6 @@
-## HFR CS PROCESSING TOOLBOX ##
+## HFR CS PROCESSING TOOLBOX FOR MATLAB##
+
+v1.0
 
 [![DOI](https://zenodo.org/badge/84593561.svg)](https://zenodo.org/badge/latestdoi/84593561)
 
