@@ -40,8 +40,8 @@ from HFRprogs as dependencies. As mentioned above, this toolbox can use
 imageFOL by Anthony Kirincich [2]. Finally, the release include code obtained
 from CODAR Ocean Sensors for reading cross spectra files. 
 
-[1] https://github.com/rowg/hfrprogs\
-[2] https://github.com/akirincich/imageFOLs\  
+[1] https://github.com/rowg/hfrprogs  
+[2] https://github.com/akirincich/imageFOLs   
 
 
 REFERENCES
