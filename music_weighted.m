@@ -1,13 +1,16 @@
-function [DOA,idx,D,V] = music(A,C,th,n)
-% MUSIC - Direction of Arrival from Multiple Signal Classification
-%  [DOA,idx,D,V] = music(A,C,th,n)
+function [DOA,idx,D,V] = music_weighted(A,C,n)
+% WEIGHTED MUSIC - Direction of Arrival from Multiple Signal Classification
+%  [DOA,idx,D,V] = music_weighted(A,C,n)
 %
 % INPUTS
 % A    - Array Manifold (aka array matrix at all theta (complex))
-%        where A is Mxd, if radar has M elements and theta has d bearings,
 % C    - Covariance matrix
-% th   - bearings associated with A
-% n    - max number of signal sources (defaults to M-1)
+% n    - max number of signal sources (defaults to M-1)*
+%
+% *If a radar has M elements and theta has d bearings, A is Mxd
+%
+% Method is equivalent to the Min-Norm algorithm, as implemented. Other
+% weights are possible.
 % 
 %
 % OUTPUTS
@@ -18,42 +21,29 @@ function [DOA,idx,D,V] = music(A,C,th,n)
 % D      - Vector of eigenvalues
 % V      - Matrix of eigenvectors
 %
-% 
-% SEE ALSO
-% From music_ss.m and others. Use run_parameter_test.m on outputs for 
-% SeaSonde MUSIC parameters. See also music_error.m, music_error2.m
+% REFERENCE
+% Krim and Viberg, 1996, eqn 37. Also
 
 % Copyright (C) 2017 Brian Emery
 
 
 % TO DO
-% check that units are NOT dbm on C input
-% more compatibility/swappability with mle.m, mle_ap.m, etc
-%
-% Incorp these in from R2017b?:
-% islocalmin and islocalmax Functions: Detect local minima and maxima in data
-% minkand maxk Functions: Find the k smallest or largest elements in an arr
-%
-% ** ULA AND RA8 ** 
-% Need to look at peakfinder for ULA's which tend to get anomolous points
-% near the end of the pattern. Otherwise might need to adjust settings for
-% closely spaced sources, see look_for_music_breakdown_check_peakfinder.m
-%
-% Write an easier to understand peakfinding algorithm. The one here is good
-% because it can handle noise, which might be a characteristic of the DOA,
-% but it seems that it could be far simple. Needs a test with ULA, RA8 and
-% closely spaced sources. See: https://stackoverflow.com/questions/22583391/peak-signal-detection-in-realtime-timeseries-data
-
+% - More testing ... reproduce a figure (VT02 pg 1168)
+% - look at VT02 pg 1164, which may give a different form for W - need to
+%   look into this
 
 % Check for test case
 if strcmp('--t',A), test_case, end
 
+% Get #elements by #bearings to loop over
+[M,p] = size(A);
 
 % Check for number of signals to search for
-if nargin < 4, n = size(A,1)-1; end
+if nargin < 3, n = M-1; end
 
 % Check for n too large
-if n > size(A,1)-1, n = size(A,1)-1; end
+if n > M-1, n = M-1; end
+
 
 % Get eigen-decomposition
 [V,D] = eig(C); 
@@ -63,28 +53,42 @@ if n > size(A,1)-1, n = size(A,1)-1; end
 [D,ix] = sort(diag(D));  
 V = V(:,ix); 
 
-% get number of elements
-M = size(V,1);
+
+% Define weights - this is the min norm method. KV96 orders eigenvalues
+% largest to smallest, the reverse of what I have, so this reversed
+% compared to what they have, (eqn 38) eg, the last column of the identity
+% matrix
+W = zeros(M); W(end,end) = 1;
 
 
 
 
 % Initialize the Outputs
-DOA(1:length(th),1:n) = NaN;
+DOA = NaN(p,n);
 
 % loop over number of signals assumed
 for j = 1:n
     
-    
+
     % Noise sub space for j brg soln
     % noise subspace is 1:(M-n), b/c the (M-n+1):M is the signal subspace
     En = V(:,1:(M-j));
     
     % loop over bearings, computing the DOA for each of the n cases
-    for i = 1:length(th)
+    for i = 1:p
+                        
+        
+%         % VT02 W calculation - Dimensions are wrong ...
+%         % abs^2 notation is sqrt(sum( x.^)).^2 ... sort of
+%         c = En(1,:).';
+%         w1 = conj(c)/(norm(c)^2);
+%         W = w1*w1';
+        
                 
-        % Compute the DOA function (Schmidt 1986, equation 6)
-        DOA(i,j) = 1/(A(:,i)'*(En*En')*A(:,i));
+        % Compute the DOA function (Krim and Viberg eqn 37, roughly)
+        DOA(i,j) = 1/(A(:,i)'*(En*En')*W*(En*En')*A(:,i));
+        
+        
         
     end
     
@@ -129,8 +133,8 @@ for i = 2:n
     [idx{i},y] = peakfinder(x, (max(x)-min(x))/200, [], 1,1);
     
     % check for and remove end points
-         y =      y(~ismember(idx{i},[1 length(th)]));
-    idx{i} = idx{i}(~ismember(idx{i},[1 length(th)]));
+         y =      y(~ismember(idx{i},[1 p]));
+    idx{i} = idx{i}(~ismember(idx{i},[1 p]));
     
     % get largest n peaks
     if length(idx{i}) > i
@@ -179,10 +183,42 @@ end
 function test_case
 % TEST CASE
 % 
-% Makes a figure showing the DOA function vs bearing just like fig 9 in the
-% De Paolo and Terrill Scripps report
-%
 % Lots of code from music.m
+
+
+
+
+% VALIDATION TEST
+% high SNR, high K, ... works
+
+th = -45:0.1:45;
+M = 8;          % # elements in array
+K = 100;        % # snapshots
+
+% Make the pattern (xu seems to work best?)
+[A,~] = make_ula_pattern(th,M,'xu'); %,'moses'); or 'xu', all relative to perp
+
+[~,ix,~] = intersect(th,[3 14 25]);
+
+
+% SNR 30
+[C, asnr] = radar_simulation_basic( A(:,ix) ,K,40);
+
+[DOA,idx,D,V] = music_weighted(A,C,3);
+
+keyboard
+
+a = axis;
+
+plot(ix([1 1]),a([3 4]))
+plot(ix([2 2]),a([3 4]))
+
+
+
+
+
+
+% BASIC TEST
 
 % (APM,DOA,singleIdx,dualIdx)
 
@@ -200,7 +236,7 @@ APM = make_ideal_pattern(225, 0:5:360);
 A = get_array_matrix(APM); 
 
 % Run the test
-[DOA,idx] = music(A,C,APM.BEAR,2);
+[DOA,idx] = music_weighted(A,C,2);
 
 
 

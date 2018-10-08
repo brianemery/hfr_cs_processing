@@ -60,7 +60,9 @@ CS = cs_volts2dbm(CS);
 
 % Define fields of CS file
 % fn = {'antenna1Self', 'antenna2Self', 'antenna3Self'};
-fn = {'antenna3Self','antenna13CrossSp','antenna23CrossSp'};
+fn = intersect(fieldnames(CS),{'antenna3Self','antenna13CrossSp', ...
+                               'antenna23CrossSp','a33','a13','a23', ...
+                               'a0303','a0103','a0203',});
 
 
 % Compute noise levels for whole CS
@@ -74,7 +76,7 @@ CS = cs_get_noise_level(CS);
 for i = 1:numel(fn)
     
     % compute snr after expanding noise scalars
-    CS.SNR.(fn{i}) = CS.(fn{i}) - (ones(size(CS.antenna1Self,1),1)*CS.noiseLevel.(fn{i})) ;
+    CS.SNR.(fn{i}) = CS.(fn{i}) - (ones(size(CS.(fn{1}),1),1)*CS.noiseLevel.(fn{i})) ;
     
 end
 

@@ -1,12 +1,14 @@
 function [Pvalues,testResult] = run_param_test(eigValues,eigVectors,A,dualIdx,P)
 % RUN MUSIC PARAMETER TESTS.M - determine 1 or 2 bearing solution
+% [Pvalues,testResult] = run_param_test(eigValues,eigVectors,A,dualIdx,P)
+% 
 % Apply Codar's MUSIC parameters to determine if the 2bearing or 1bearing
 % hypothesis is more valid. Since the test is run on the dual brg solution,
-% testResult is true if dual, false if single.
+% testResult is * TRUE IF DUAL *, false if single.
 %
 % INPUTS 
 % eigValues,eigVectors - of the covariance matrix
-% A                    - antenna pattern data matrix --measurement structure--
+% A                    - antenna pattern data matrix 
 % dualIdx              - two indicies of the APM bearings (dual brg soln)
 % P                    - the MUSIC parameters, eg [20 10 3] or [40 20 2]
 %
@@ -57,66 +59,58 @@ end
 if nargin < 5, P = [40 20 2]; end
 
 % input must be vector of eigenvalues
-if size(eigValues,2) ~=1 , eigValues = diag(eigValues); end
+if ~isvector(eigValues), eigValues = diag(eigValues); end
 
+% trivial check smallest to largest
+[eigValues,ie] = sort(eigValues); eigVectors = eigVectors(:,ie); 
 
 % initialize the actual values for output
-Pvalues=[];
+Pvalues = NaN(1,3); 
 
-% Get the APM manifold points. (each row is a diff bearing)
-% A = [APM.A13R(:)+APM.A13I(:) APM.A23R(:)+APM.A23I(:) ones(size(APM.BEAR(:)))];
-% A = [ APM.A13R(:)+1i*APM.A13I(:)  APM.A23R(:)+1i*APM.A23I(:)  1+1i.*zeros(size(APM.BEAR(:))) ];
-% ... code below wants it nbearings x m antennas
+% Get the APM manifold ... code below wants it nbearings x m antennas
 A = A.';
 
 
+
+% RUN TESTS
 % TWO bearing solution if:
 
 % 1) the ratio of the largest eigenvalue to the 2nd largest is less
-% than P1 (eg 20). That is (largest/2nd largest < P1).
-% disp('Dual Bearing Solution if ...')
-% disp('Eigenvalue ratio <20:')
-% NOTE: APM NOT USED HERE
+% than P1 
 Pvalues(1) = eigValues(end)./eigValues(end-1); 
 
+
+
 % 2) "the ratio of the largest two signal powers to the smallest [of the
-% two signal powers] is be less than P2 (usually 10)".
-% Compute signal power matrix (again from Tony's paper):
-% % More of method from DePaolo and Terril:
-% G=A(dualIdx,:)*eigVectors(:,2:3);
-% S=inv(G)'*[eigValues(end-1) 0; 0 eigValues(end) ]*inv(G);
-%
-% COS's Patent Version:
-% G=conj(a)'*Es ; conj(a(theta))' is 2x3, Es is 3x2, so G is 2x2
-% Note! My A is already a row vector with each row a bearing. Codar has
-% each COL a bearing, so they transpose, I dont. Also, my eigenvalues are
-% smallest to largest, codar's are the opposite. Also Tony shows
-% the S calculation with the largest eigenvalue in the bottom left while
-% codar shows it in the upper right. ... but these produce the same exact
-% output for Tony's test case.
+% two signal powers] is be less than P2. This based on COS's Patent
+% Version.
+
 G  = conj(A(dualIdx,:))*eigVectors(:,[3 2]);
 Gt = eigVectors(:,[3 2])'*A(dualIdx,:)';
+
 % S  = inv(Gt)*[eigValues(end) 0; 0 eigValues(end-1) ]*inv(G);
 S  = Gt\[eigValues(end) 0; 0 eigValues(end-1) ]/(G);
 
-
-% GET Signal Power Ratio:
+% Get Signal Power Ratio:
 sigPowers = sort(diag(S)); 
+
 Pvalues(2) = real(sigPowers(end))./real(sigPowers(end-1));
+
+
 
 % 3) for the signal matrix, the ratio of the product of the diagonal
 % elements to the product of the off diagonal elements must be greater
 % than P3.
-% disp('Off Diagonal Ratio:')
 Pvalues(3) = real(prod(diag(S)) ./ prod(S([2 3])) );
 
+
 % Run test (TRUE IF DUAL BEARING)
-testResult = false;
 if Pvalues(1) < P(1) && Pvalues(2) < P(2) && Pvalues(3) > P(3)
     testResult = true;
+else
+    testResult = false;
 end
 
-% disp('music param testing stopped:')
 
 
 end

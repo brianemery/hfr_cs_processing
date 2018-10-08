@@ -28,6 +28,9 @@ function CS = cs_ship_rm(CS)
 % the ships going through Bragg. Or does it?  I could look at some data 
 % (SCI) and find this. ... Actually, I think the residual might just be the
 % short term signal due to ships ...
+% One way around this might be to output a SNR above BG for each bin in
+% first order region and then use that the identify suspicious signal
+% 
 
 % IDEA
 % Could use the SNR of the BG to identify anomalous signal levels due to
@@ -98,6 +101,7 @@ end
 
 function  m = get_index_of_n(m,i,n)
 % for m integers, find the n nearest to i
+
 
 % sort by the distance from i
 [~,ix] = sort( abs(m-i) ); 

@@ -1,6 +1,10 @@
-function idx = wsf(A,R,n)
+function [idx,Vwsf,s] = wsf(A,R,n)
 % WEIGHTED SUBSPACE FITTING -  Estimate DOA with WSF algorithm
-% idx = wsf(A,C,q)
+% [idx,Vwsf,sigma2] = wsf(A,C,q)
+%
+% See Van Trees 2002, pg 1011, which suggests this is equivalent (for our
+% purposes) to the Method of Direction Estimation (MODE) given by Stoica
+% and Sharman, (1990).
 %
 % INPUTS
 % A    - Array Manifold (aka array matrix at all theta (complex))
@@ -11,9 +15,9 @@ function idx = wsf(A,R,n)
 %
 %
 % OUTPUTS
-% idx    - Cell array with indecies of the n signal source solutions
-%          eg idx{1} has the index of the single source soln, idx{2} is
-%          dual, etc
+% idx    - double array with indecies of the n signal source solutions
+% Vwsf   - value of the the WSF cost function at the DOA estimate (theta)
+% sigma2 - the estimated noise variance
 %
 % REFERENCE
 % Krim and Viberg, 1996, "Two Decades of Array Signal Processing Research: 
@@ -22,7 +26,7 @@ function idx = wsf(A,R,n)
 %   Arrays Using Weighted Subspace Fitting", IEEE  
 %
 % SEE ALSO
-% music.m, mle.m, mle_ap_ss.m, mle_ap.m
+% music.m, mle.m, mle_ap.m, sml_ap.m
 
 % Copyright (C) 2017 Brian Emery
 %
@@ -64,11 +68,11 @@ end
 
 % INIT WSF 
 
-% Do eigen decomposition of covariance matrix input
-[U,D] = eig(R,'vector'); 
+% Do eigen decomposition of covariance matrix input (R2013 compatible)
+[U,D] = eig(R); D = diag(D); %,'vector'); 
 
 % sort largest to smallest 
-[~,ix] = sort(D,'descend');  % < --- CHECK
+[~,ix] = sort(D,'descend'); 
 D = D(ix);
 U = U(:,ix); 
 
@@ -79,21 +83,13 @@ Us = U(:,1:n);
 % Matrix of Signal eigenvalues
 Ds = diag(D(1:n)); 
 
-% estimate noise variance from noise eigen values % < --- CHECK
-% does this need to be squared?
+% estimate noise variance from noise eigen values (aka sigma squared)
 s = mean(D(n+1:end));
 
 
-% Compute the Weight matrix
+% Compute the Weight matrix (optimal for large K)
+% VT02 eqn 8.368
 W = (( Ds - s.*eye(n) )^2) /(Ds); % /(Ds) is eqivalent to *inv(Ds)
-
-% % what size I
-% I = eye(m); %?
-
-
-
-
-
 
 
 
@@ -110,31 +106,27 @@ while any(d > eps)
         
         % index of thi to use in prior projection
         x =  setdiff(1:n,i);
-        
-                
+                        
         % loop over th, for  this iteration
-        thi_k(i) = arg_min(A,Us,W,thi(x));
-        
+        [thi_k(i),Vwsf] = arg_min(A,Us,W,thi(x));
                 
-        % disp(['thi   = ' num2str(thi)])
-        % disp(['thi_k = ' num2str(thi_k)])
-        
         % check for convergence for each individually   
         d = sqrt(( thi_k - thi ).^2);
         
         % update/ inti thi_k
         thi = thi_k;
         
-        k = k+1;  % disp(num2str(k))
         
     end
     
-    % Put a break in here?
-    if k == 100,
+    k = k+1;  % disp(num2str(k))
+    
+    % Put a break in here  (Viberg et al 1991 uses max 30 iterations
+    if k >= 100, % see experiment_mle_ap_iterations
         disp('WSF: 100 iterations reached, terminated')
         break
     end
-
+    
     
 end
 
@@ -174,13 +166,19 @@ for i = setdiff(1:n,ix)
     
 end
 
-[~,thi] = max(tr);
+
+[~,thi] = max(real(tr));
 
 end
 
-function thi = arg_min(A,Us,W,thx)
+function [thi,Vwsf] = arg_min(A,Us,W,thx)
+%  WSF Function to minimize
 % 
-% Simple version of MLE-AP ... for use with WSF.M
+% INPUTS
+% A   - array matrix
+% Us  - signal eigenvectors
+% W   - weight matrix
+% thx - index (?) of bearing to hold fixed for this iteration
 
 
 % Get number of bearings to loop over for the maximization
@@ -194,7 +192,6 @@ tr = NaN(n,1);
 
 for i = setdiff(1:n,thx)
     
-
     % Projection matrix (function of theta) PI_A perp
     PI = I - (A(:,[thx i])*pinv(A(:,[thx i])));
     
@@ -204,9 +201,17 @@ for i = setdiff(1:n,thx)
     
 end
 
-[~,thi] = min(tr);
+% note that they dont take the log but sml_ap does and this looks much
+% better (more accurate?) when taking the log
+[~,thi] = min(real(log(tr)));
 
-% plot(real(tr)), hold on
+% plot(real(log(tr))), hold on
+% 
+% plot(thi,real(log(tr(thi))),'*'), pause
+
+Vwsf = real(tr(thi));
+
+
 
 end
 
@@ -235,6 +240,40 @@ function test_case
 % Elapsed time is 228.815552 seconds.
 % mle vs mle_ap ... get same result!
 
+
+
+% BASIC VALIDATION TEST
+% high SNR, high K, ... works
+
+th = -45:0.1:45;
+M = 8;          % # elements in array
+K = 100;        % # snapshots
+
+% Make the pattern (xu seems to work best?)
+[A,~] = make_ula_pattern(th,M,'xu'); %,'moses'); or 'xu', all relative to perp
+
+[~,ix,~] = intersect(th,[3 14 33]);
+
+
+% SNR 30
+[C, asnr] = radar_simulation_basic( A(:,ix) ,K,40);
+
+
+iy = wsf(A,C,2);
+
+
+a = axis;
+plot(ix([1 1]),a([3 4]))
+plot(ix([2 2]),a([3 4]))
+
+keyboard
+
+
+
+
+
+
+
 %   205   330
 [C,APM] = test_data_tonys;
 
@@ -254,6 +293,5 @@ dx = mle_ap(A,C,2);
 end
 
 
-% delete?
 
 

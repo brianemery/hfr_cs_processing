@@ -2,8 +2,7 @@ function [MU,ML] = doa_on_cs(CS,APM,peakIdx,K)
 % DOA ON CS - run DOA processing on CS data 
 % [MU,ML] = doa_on_cs(CS,APM,peakIdx,K)
 %
-% A more general version of radial_from_cs.m, uses imageFOL.m to get first
-% order, and is called by run_cs_processing.m
+% A more general version of radial_from_cs.m, called by run_cs_processing.m
 %
 % Make sure CS have not been converted to dBm
 %
@@ -25,20 +24,35 @@ function [MU,ML] = doa_on_cs(CS,APM,peakIdx,K)
 % version 10-Apr-2017 14:56:35
 % derived from earlier versions of radial_from_cs.m
 
+% TO DO
+% appear to sometimes get dual= true when there is only one velocity
+% solution ... see vr_averaging_investigation.m for evidence, but code here
+% could probably test that there is a 2nd velocity and mark it single
+% otherwise
+%   
+% Update for new way to handle DOA structs (see doa_struct.m)
+
+
 % Check for test
 if strcmp('--t',CS), test_case, return, end
 
 % CONFIGURE
 
 if nargin < 4
-    % Infer the number of data snapshots (about 3.5?)
+    % Infer the number of data snapshots (about 3.5?) ... less desirable
     K = CS.Header.averagingTimeMin/((CS.Header.fftLength/CS.Header.SwRfreqHz)/60);
+    
+    disp(['Computed value of K from Header info: ' num2str(K) ])
+    
 end
+
 
 % make sure units are *NOT* dbm
 if isfield(CS,'Units') && strcmp('dBm',CS.Units)
     CS = cs_dbm2volts(CS);
 end
+
+
 
 
 % GET THE DOAS
@@ -58,6 +72,11 @@ ML = struct_cat(1,ML);
 
 end
 
+
+% ** not sure why I'm using this here instead of the file of same name **
+%
+% ... the file of the same name is getting updates for use with experiments
+% functions, including generalization to m emitters ...
 function [MU,ML] = doa_on_range_cell(CS,APM,peakIdx,rdx,K)
 % DOA ON RANGE CELL - custom local version
 % [MU,ML] = doa_on_range_cell(CS,APM,peakIdx,rdx)
@@ -75,7 +94,7 @@ function [MU,ML] = doa_on_range_cell(CS,APM,peakIdx,rdx,K)
 % INIT OUTPUTS
 % matrix of single and dual bearing solutions for both methods
 % index refers to the index of the APM
-ML = doa_struct(length(peakIdx)); 
+ML = doa_struct(length(peakIdx)); ML.Bear = ML.RadVel;
 MU = ML;
 
 % put this here temporarily
@@ -87,7 +106,7 @@ A = get_array_matrix(APM);
 
 
 % loop over peak indicies
-for f = 1:length(peakIdx);
+for f = 1:length(peakIdx)
     
     fbin = peakIdx(f);
     
@@ -174,12 +193,24 @@ end
 
 
 function test_case
+% TEST CASE
+%
+% dev test data from doa_on_range_cell.m
+%
+% .. a low SNR case from who knows where ...
 
-load /projects/error_covariance/data/doa_on_cs_test.mat
+
+load /m_files/test_data/doa_on_range_cell.mat
+
 
 [CS.freqs,CS.Vrad,CS.fb] = getVelocities(CS.Header);
 
-    CS.SNR = get_SNR(CS);
+CS.SNR = get_SNR(CS);
+
+
+plot(CS.freqs,10*log10(CS.antenna3Self))
+hold on
+plot(CS.freqs(peakIdx),10*log10(CS.antenna3Self(peakIdx)),'ro')
 
 tic
 [MU,ML] = doa_on_cs(CS,APM,peakIdx);

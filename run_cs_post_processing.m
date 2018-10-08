@@ -15,6 +15,7 @@ function run_cs_post_processing(wd,site)
 % Process MUSIC derived radials
 load_cat_save('Rmu',wd,site)
 
+keyboard
 
 % Process MLE derived radials
 load_cat_save('Rml',wd,site)
@@ -71,7 +72,7 @@ eval([rfn ' = temporalConcatRadials_exact(R,fn);'])
 
 disp('... done temporal concat ... doing hourly merge')
 
-
+keyboard
 
 % Make into hourly data
 eval([tfn ' = hourly_merge(' rfn ');'])

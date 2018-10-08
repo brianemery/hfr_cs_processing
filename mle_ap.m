@@ -11,9 +11,10 @@ function idx = mle_ap(A,R,q)
 %
 %
 % OUTPUTS
-% idx    - Cell array with indecies of the n signal source solutions
-%          eg idx{1} has the index of the single source soln, idx{2} is
-%          dual, etc
+% idx    - Double array with indecies of the n signal source solutions
+%
+% According to Van Trees, 2002, this implementation is equivalent to the
+% Deterministic (DML, eg Krim and Viberg, 1996) and Conditional ML.
 %
 %
 % SEE ALSO
@@ -28,9 +29,14 @@ function idx = mle_ap(A,R,q)
 % - output cell array of indecies like music.m?
 % - test, test and test 
 % - does this favor the ends of the APM with real data?
+% - FURTHER OPTIMIZE? run with 5 deg APM and then re-run with a 1 deg section
+%   around the solution at 5 deg ...
 
 % check for test case
 if strcmp('--t',A), test_case;  end
+
+% de-verb
+warning('off','MATLAB:nearlySingularMatrix')
 
 
 % INITIALIZATION
@@ -50,6 +56,7 @@ end
 d = ones(size(q)); 
 k = 1;
 thi_k = thi; % thi is current iteration, thi_k is the next
+ML = NaN(1,q);
 
 while any(d > eps) 
     
@@ -64,32 +71,34 @@ while any(d > eps)
         
         
         % loop over th, for  this iteration
-        thi_k(i) = arg_max_b(A,R,Pb,thi(x));
+        [thi_k(i),~] = arg_max_b(A,R,Pb,thi(x));
         
                 
         % disp(['thi   = ' num2str(thi)])
         % disp(['thi_k = ' num2str(thi_k)])
         
-        % check for convergence
+        % check for convergence  % maybe do this outside of signals loop
         d = sqrt(( thi_k - thi ).^2);
         
         % update/ inti thi_k
         thi = thi_k;
         
-        k = k+1;  % disp(num2str(k))
         
     end
     
-    % Put a break in here?
-    if k == 100,
+    k = k+1;  % disp(num2str(k))
+    
+    % Put a break in here  (Viberg et al 1991 uses max 30 iterations)
+    if k >= 100 % see experiment_mle_ap_iterations.m for details
         disp('MLE: 100 iterations reached, terminated')
+        %keyboard
         break
     end
-
-    
+       
 end
 
 idx = thi(:);
+
 
 end
 
@@ -122,7 +131,7 @@ for i = setdiff(1:n,ix)
     
 end
 
-[~,thi] = max(tr);
+[~,thi] = max(real(tr));
 
 end
 
@@ -155,7 +164,7 @@ b = Cb/norm(Cb); % eqn 22.b
 
 end
 
-function thi = arg_max_b(A,R,Pb,thx)
+function [thi,ML] = arg_max_b(A,R,Pb,thx)
 % b projection case (eqn 22.a)
 %
 % Form the augmentend matrix for multi-bearing cases
@@ -175,9 +184,11 @@ for i = setdiff(1:n,thx)
     
 end
 
-[~,thi] = max(tr);
+[ML,thi] = max(real(tr));
+
 
 % plot(real(tr)), hold on
+% plot(thi,real(tr(thi)),'*')
 
 end
 
