@@ -58,7 +58,7 @@ Stoica, P., & Nehorai, A. (1989). MUSIC, maximum likelihood, and
 &nbsp;&nbsp;Processing, 37(5), 720-741.  
 Emery, B. and Washburn, L. (2019). Uncertainty Estimates for SeaSonde HF   
 &nbsp;&nbsp;Radar Ocean Current Observations. Journal of Atmospheric and 
-Oceanic Technology 36.2: 231-247.
+&nbsp;&nbsp;Oceanic Technology 36.2: 231-247.
 Emery, B. (2019). Evaluation of Alternative Direction of Arrival Methods  
 &nbsp;&nbsp;for Oceanographic HF Radars. IEEE Journal of Oceanic Engineering,   
 doi: 10.1109/JOE.2019.2914537.  
