@@ -98,6 +98,21 @@ CODING PRINCIPLES
 - Write computer programs to make them easy for people to read.
 - Have  a clear division between code that is custom for a particular application, 
   and the general/easily repurposed code
+  
+  
+HOW TO CITE WITH BIBTEX
+  
+```
+@misc{Emery2018code,
+  author       = {Brian Emery},
+  title        = {{HFR CS Processing Toolbox for MATLAB}, Software Release Version 1.0, https://doi.org/10.5281/zenodo.1451950},
+  version      = {1.0},
+  month        = oct,
+  year         = 2018,
+  doi          = {10.5281/zenodo.1451950},
+  url          = {https://doi.org/10.5281/zenodo.1451950}
+}
+```
 
 
 
