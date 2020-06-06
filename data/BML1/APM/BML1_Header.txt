@@ -1,0 +1,32 @@
+1 BML1 "Bodega Marine Laboratory Standard Range" ! 1 Site#, 4Char SiteCode,"Site Desc."
+38¡19.039'N,123¡04.348'W     ! 2 Receiver Antenna Latitude,Longitude
+302                          ! 3 Antenna Loop1 Bearing deg True
+80 1.9890 1.9890             ! 4 Radial Last Range Cell. ALTERNATE RangeCell Info, 1st (km), Step (km)
+90.0                         ! 5 OBSOLETE Baseline Angle. Always 90.0
+1.0                          ! 6 OBSOLETE CSS Average for FirstOrderCalc
+12.156855                    ! 7 ALTERNATE. Tx Center Freq MHz
+512                          ! 8 ALTERNATE Doppler Points
+0.00390625                   ! 9 ALTERNATE Doppler Resolution in Hz
+UTC 0.000 UTC                !10 Time Zone Abbr., fromUTC, CityZone
+150 4                        !11 Max. Velocity Limit, Num Pts Smoothing For FirstOrderCalc
+39.80 1 25.10                !12 Factor Down Peak limit 1st order Radials , 1=use peak null, Factor down 1rst order Waves
+15                           !13 Reserved
+15 17                        !14 Wave Process Range Cells, Estim. Max Wave Period (seconds)
+6.30 6.30  12.60 3.20        !15 Radials:Factor down peak nulls, Noise factor, Waves:Factor down peak nulls, Noise factor
+400 168 288                  !16 OBSOLETE (Was Keep CSA,Rad,CSSs)
+5.40 1.15  5.40 1.15         !17 Ampl Factors Ideal:Amp1,Amp2  Patt:Amp1,Amp2
+323 143                      !18 Coastline bearings, deg True, Right/left hand facing sea
+40 20 2   15 15 25 15        !19 Music params eigrat,sigprat,diagrat. OBSOLETE Smooth Med,Smear,Vel,Gap.
+_-                           !20 OBSOLETE Classic Rad,Tot Filename date,space chars (Use '-_' or '__')
+ 75 60 0 0                   !21 Rads:  Coverage min., Output Interval min., Interval Offset min., 0=Watch Timespan
+5.0                          !22 Bearing Resolution
+ 95 10 0 0                   !23 Waves:  Coverage min., Output Interval min., Interval Offset min., 0=Watch Timespan
+1.00                         !24 Ionosphere Noise Rejection Factor
+0                            !25 Doppler Noise Limit
+320 160                      !26 OBSOLETE Wave direction limits, deg True, Right/left hand facing wave fronts
+1 2                          !27 Radial First Range Cell, WaveModel First Range Cell.
+360                          !28 Amplitude Factor Averaging Period min.
+10                           !29 WaveModel Minimum Dopper Points
+2.1 10.0 30.0  30.0 3.0      !30 RadialFiller RCLim, AngLim, CurLim,  AngGap, RngGap
+240 160                      !31 WaveModel Wave From Direction limit Center Bearing True, Sector Width deg.
+5 17                         !32 WaveModel Wave Period override limits.
