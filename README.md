@@ -45,8 +45,9 @@ The release is self contained but includes code from the following people
 and or toolboxes. HFRProgs [1] by David Kaplan set the standard, and data
 structures here follow the same basic formatting. I've include a few mfiles
 from HFRprogs as dependencies. As mentioned above, this toolbox can use 
-imageFOL by Anthony Kirincich [2]. Finally, the release includes code obtained
-from CODAR Ocean Sensors for reading cross spectra files. 
+imageFOL by Anthony Kirincich [2]. The toolbox includes code obtained
+from CODAR Ocean Sensors for reading cross spectra files. Version 1.5 
+includes data from BML1 provided by William Speiser and John Largier. 
 
 [1] https://github.com/rowg/hfrprogs  
 [2] https://github.com/akirincich/imageFOLs   
