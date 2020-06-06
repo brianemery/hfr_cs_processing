@@ -8,7 +8,7 @@ Tools for processing oceanographic HF radar cross spectra with direction
 finding methods. 
 
 - Provides research quality software for processing HFR data following the
-  methods of Lipe et al. (2006).
+  methods of Lipa et al. (2006).
 - Employs a home made ship removal algorithm that follows what is known 
   about how it's really done. 
 - Generalizes the cross spectra data structure for arbitrary arrays.
@@ -23,16 +23,20 @@ finding methods.
 
 HOW TO USE IT
 - download it and add the unzipped directory to your MATLAB path
-- start with run_cs_processing.m 
+- run the demo to make sure it works (run_cs_processing_demo.m)
+- edit run_cs_processing.m for more advanced applications 
+- edit doa_on_cs.m (~line 80) to include the use of parfor 
 
 
 
 TO DO
-- I need to add a demo/test, e.g. using Anthony's data for validation, but
-  also could build some edge case tests using simiulations (eg 0-360 
+- Include installation instructions?
+- Could build some edge case tests using simiulations (eg 0-360 
   transition, etc)
 - Arbitrary arrays need a detection method (that is, single bearing vs dual
-  vs ... etc). 
+  vs ... etc).
+- This commit includes many more mfiles than are actually needed due to MATLAB's 
+  dependency tool - need a better way to isolate tools. 
 
 
 ACKNOWLEDGMENT

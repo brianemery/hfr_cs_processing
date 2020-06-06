@@ -23,7 +23,7 @@ function CSL = cs_load(flist,ftimes,rtime,tau,CSL)
 % Copyright(C) 2017 Brian Emery
 
 
-% need to make pass through for CSS 
+% need to make pass through for CSS ?
 if tau == 0, keyboard, end
 
 
@@ -45,7 +45,8 @@ addlist = setdiff(flist(cx),inlist);
 if ~isempty(addlist)
 
     for i = 1:numel(addlist)
-        CSL(end+1) = ReadCS(addlist{i});
+        % CSL(end+1) = ReadCS(addlist{i});
+        CSL(end+1) = load_by_type(addlist{i});
     end
     
 end
@@ -98,6 +99,25 @@ end
 % % at any time the average of CSL should be the same as CS
 % CSA = cs_average(CSL);
 % plot(1:512,10*log10(CSA.antenna3Self(:,10)),'-b')
+
+
+
+end
+
+function CS = load_by_type(fname)
+
+[~,~,ext] = fileparts(fname);
+
+if strcmp('.cs',ext) 
+    
+    % S = ReadCS(fname);
+    CS = cs_read(fname);
+    
+elseif strcmp('.mat',ext) 
+    
+    CS = load(fname,'CS'); CS = CS.CS; %jfc
+end
+
 
 
 

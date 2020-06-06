@@ -1,49 +1,60 @@
-function [MU,ML] = doa_on_cs(CS,APM,peakIdx,K) 
+function S = doa_on_cs(CS,APM,peakIdx,K,n,dmth) 
 % DOA ON CS - run DOA processing on CS data 
-% [MU,ML] = doa_on_cs(CS,APM,peakIdx,K)
+% S = doa_on_cs(CS,APM,peakIdx,K,n)
 %
 % A more general version of radial_from_cs.m, called by run_cs_processing.m
 %
 % Make sure CS have not been converted to dBm
 %
 % INPUTS
-% CS struct, APM struct, peakIdx
+% CS struct, APM struct, peakIdx as a cell
 % ... K snapshots for music error
+% peakIdx - A cell array (with numel = (# range cells)), each containing the
+%           row index points within the First Order peaks.
 %
 % OUTPUTS
-% radial structs MU and ML based on MUSIC and MLE-AP
+% doa struct
 %
-% FROM doa_on_range_cell.m
-% 
+% FROM doa_on_range_cell.m, which it now calls
+%
 % SEE ALSO
-% radial_from_cs.m
-%
+% radial_from_cs.m (old)
 
 % Copyright (C) 2017 Brian Emery
 %
 % version 10-Apr-2017 14:56:35
 % derived from earlier versions of radial_from_cs.m
+%
+% updates Nov 2018 to merge with doa_on_range_cell.m
 
 % TO DO
+%  
 % appear to sometimes get dual= true when there is only one velocity
 % solution ... see vr_averaging_investigation.m for evidence, but code here
 % could probably test that there is a 2nd velocity and mark it single
 % otherwise
-%   
-% Update for new way to handle DOA structs (see doa_struct.m)
-
+%
+% MATLABPOOL ON KNOT?
+% I'm useing R2012 on knot, do I need to invoke matlabpool? should I just
+% use R2017? https://csc.cnsi.ucsb.edu/docs/using-matlab
 
 % Check for test
 if strcmp('--t',CS), test_case, return, end
 
-% CONFIGURE
+
+% CONFIGURE, CHECK INPUTS
 
 if nargin < 4
     % Infer the number of data snapshots (about 3.5?) ... less desirable
     K = CS.Header.averagingTimeMin/((CS.Header.fftLength/CS.Header.SwRfreqHz)/60);
     
-    disp(['Computed value of K from Header info: ' num2str(K) ])
+    % disp(['Computed value of K from Header info: ' num2str(K) ])
     
+end
+
+if nargin < 5
+    % also set emitters to search for 
+    n = 2;
 end
 
 
@@ -52,156 +63,126 @@ if isfield(CS,'Units') && strcmp('dBm',CS.Units)
     CS = cs_dbm2volts(CS);
 end
 
+% if ~iscell(peakIdx)
 
-
-
-% GET THE DOAS
-parfor i = 1:length(peakIdx) %  %PARFOR
-
-    [MU(i),ML(i)] = doa_on_range_cell(CS,APM,peakIdx{i},i,K);
-    
+% Enable ability to specify DOA method to use
+if nargin < 6
+    dmth = {'ml','mu'}; % default to just two
 end
 
-
-% Concat the data
-MU = struct_cat(1,MU);
-ML = struct_cat(1,ML);
-
-
-
-
-end
-
-
-% ** not sure why I'm using this here instead of the file of same name **
-%
-% ... the file of the same name is getting updates for use with experiments
-% functions, including generalization to m emitters ...
-function [MU,ML] = doa_on_range_cell(CS,APM,peakIdx,rdx,K)
-% DOA ON RANGE CELL - custom local version
-% [MU,ML] = doa_on_range_cell(CS,APM,peakIdx,rdx)
-%
-% Make sure CS have not been converted to dBm
-%
-% INPUTS
-% ... K snapshots for music error
-% ... peakIdx is just a vector here
-%
-% OUTPUTS
-% radial structs MU and ML based on MUSIC and MLE-AP
-
-
-% INIT OUTPUTS
-% matrix of single and dual bearing solutions for both methods
-% index refers to the index of the APM
-ML = doa_struct(length(peakIdx)); ML.Bear = ML.RadVel;
-MU = ML;
-
-% put this here temporarily
-MU.Type = 'music';
-ML.Type = 'mle_ap';
-
-% get array matrix for music error (SeaSondes)
-A = get_array_matrix(APM);
-
-
-% loop over peak indicies
-for f = 1:length(peakIdx)
     
-    fbin = peakIdx(f);
-    
-    % build covariance matrix     
-    C = make_cov(CS,fbin,rdx);
-    
- 
-    % RUN DF METHODS
-    
-    % Max liklihood - alt projection NEED TO CHECK CODE - rm ends?
-    ix{1,1} = mle_ap(A,C,1);   
-    ix{2,1} = mle_ap(A,C,2);   
-    
-    % Max liklihood
-    % [ix,~] = mle(APM,C);
-    
-    % Music
-    % keyboard
-    % [~,sdx,ddx,tr,P] = music(APM,C);
-    [~,mx,D,V] = music(A,C,APM.BEAR);
-    
-    % .. could use a clean up
-    [P,tr] = run_param_test(D,V,A,mx{2});
-    
-    % stack indecies in a row vector
-    % account for possibility of length(dualIdx) = 1
-    mx = [mx{1} mx{2}']; %[sdx ddx(:)'];
-    ix = [ix{1} ix{2}'];
-    
-    % music
-    MU.Bear(f,1:length(mx))   = APM.BEAR(mx);
-    MU.RadVel(f,1:length(mx)) = CS.Vrad(fbin);
- 
-    % mle
-    ML.Bear(f,:)   = APM.BEAR(ix);
-    ML.RadVel(f,1:length(ix)) = CS.Vrad(fbin);
+% Pre-pre allocate, more or less
+[S(1:numel(peakIdx))] = deal(doa_struct(1,n,n,dmth));
+
+
+
+
+
+% CONDITIONAL PARFOR
+[~,r] = system('hostname');
+
+if strncmp(r,'ekman',5) %|| strncmp(r,'yourcomputer',12)
     
     
-    % Just use MUSIC Parameter test for now ...
-    MU.Dual(f) = tr;
-    MU.Params(f,:) = P;
-    ML.Dual(f) = tr;
+    % GET THE DOAS
+    parfor rc = 1:numel(peakIdx) %  %PARFOR over different range cells
         
-    % Guess these should take V,D as inputs ...
-    MU.Err(f,1) = music_error(A,C,APM.BEAR,K,1,mx(1));
-    MU.Err(f,2:length(mx)) = music_error(A,C,APM.BEAR,K,2,mx(2:end));
+        S(rc) = doa_on_range_cell(CS,APM,peakIdx{rc},rc,K,n,dmth);
         
-    % Get SNR data
-    MU.SNR(f,:) = [CS.SNR.antenna3Self(fbin,rdx) ...
-                CS.SNR.antenna13CrossSp(fbin,rdx) CS.SNR.antenna23CrossSp(fbin,rdx)];
-    ML.SNR(f,:) = MU.SNR(f,:);
+    end
     
-    clear ix
-
-    %     % PLOTTING
-    %
-    %     % MUSIC dual and single
-    %     hu    = plot(MU.Bear(f,2:3),MU.RadVel(f,2:3),'go');
-    %     hu(2) = plot(MU.Bear(f,1),MU.RadVel(f,1),'g*');
-    %
-    %     % MLE dual and single
-    %     hx    = plot(ML.Bear(f,2:3),ML.RadVel(f,2:3),'ro');
-    %     hx(2) = plot(ML.Bear(f,1),ML.RadVel(f,1),'r*');
-    %
-    %
-    %     if f == 1,
-    %         legend([hu(:)' hx(:)'],'MUSIC dual','MUSIC sngl','MLE dual','MLE sngl')
-    %
-    %     end
-    %
-    %     pause
+else % default to non-parallel for unknown computers
+    
+    
+    % GET THE DOAS
+    for rc = 1:numel(peakIdx) %  peakIdx input as cell
+        
+        S(rc) = doa_on_range_cell(CS,APM,peakIdx{rc},rc,K,n,dmth);
+        
+    end
+    
+    
 end
 
 
-% need this range index to get range later
-MU.RngIdx = rdx*ones(size(MU.Bear));
-ML.RngIdx = rdx*ones(size(ML.Bear));
+% Concat all the range cells
+S = struct_cat(1,S);
 
-
+% Document
+try, S.ProcessingSteps = {'doa_on_range_cell','doa_on_cs.m'}; catch, end
 
 
 end
-
 
 
 function test_case
 % TEST CASE
 %
-% dev test data from doa_on_range_cell.m
-%
-% .. a low SNR case from who knows where ...
+% dev test data from cs_read.m
+
+% Get cs test filename
+fn = '/m_files/test_data/compute_apm_from_csq/CSQ_cop1_08_12_06_205124.cs';  
+
+% probably not a valid APM for this CS but good enough for the functional
+% test ...
+load /m_files/test_data/doa_on_range_cell.mat APM
 
 
-load /m_files/test_data/doa_on_range_cell.mat
+% load subset of range cells and see how they compare
+CS = ReadCS(fn); 
 
+[CS.freqs,CS.Vrad,CS.fb] = getVelocities(CS.Header);
+
+% FOL processing (rows are range cells)
+user_param = [40 100 5];
+
+% ... from subfunction to run_cs_processing ...
+[~,Vrad,~] = getVelocities(CS.Header);
+
+[~,~,dv] = getDopplerVelocities(CS.Header);
+
+n = length(Vrad)/2;
+
+% get approx indecies of Bragg lines ... in general
+[~,iBragg(1)] = min( abs( Vrad(1:n)) ) ;
+[~,iBragg(2)] = min( abs( Vrad(n:end)) ) ; 
+
+% adjust last result
+iBragg(2) = iBragg(2) + n - 1;
+
+% velocity increment m/s
+v_incr = dv/100; %mode(diff(Vrad))/100;
+
+% get distance to first range cell
+rkm = CS.Header.distToFirstRangeCell;
+
+% ...
+
+[~, FOregi, ~] = imageFOLs(CS.antenna3Self.',iBragg,v_incr,user_param);
+
+% convert FOregi to peakIdx
+peakIdx = convert_fol_ix(FOregi);
+
+
+% check plot
+rc = 25;
+plot(1:512,real(10*log10(CS.antenna12CrossSp(:,rc))),'-'), hold on
+        
+plot(peakIdx{rc},real(10*log10(CS.antenna12CrossSp(peakIdx{rc},rc))),'*'), hold on
+
+
+S = doa_on_cs(CS,APM,peakIdx);
+ 
+ 
+keyboard
+
+
+
+
+% OLDER SIMPLER TEST (AND TIMES, PERHAPS)
+
+% % .. a low SNR case from who knows where ...
+% load /m_files/test_data/doa_on_range_cell.mat
 
 [CS.freqs,CS.Vrad,CS.fb] = getVelocities(CS.Header);
 
@@ -211,6 +192,13 @@ CS.SNR = get_SNR(CS);
 plot(CS.freqs,10*log10(CS.antenna3Self))
 hold on
 plot(CS.freqs(peakIdx),10*log10(CS.antenna3Self(peakIdx)),'ro')
+
+% doa_on_cs requires cell input for peakIdx
+px = peakIdx;
+peakIdx = {px};
+peakIdx{2} = px; % build up for parfor testing ... must match nmber of rc's
+
+
 
 tic
 [MU,ML] = doa_on_cs(CS,APM,peakIdx);
