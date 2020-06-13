@@ -122,6 +122,7 @@ else
     leftMin = x0(1);
 end
 
+
 % x only has the peaks, valleys, and possibly endpoints
 len = numel(x);
 

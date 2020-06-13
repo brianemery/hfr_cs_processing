@@ -1,13 +1,16 @@
-function [DOA,idx,D,V] = music(A,C,th,n)
+function [DOA,idx,D,V] = music(A,C,th,n,mpp)
 % MUSIC - Direction of Arrival from Multiple Signal Classification
 %  [DOA,idx,D,V] = music(A,C,th,n)
+%
+% . ** NEW A and th should be sorted **
 %
 % INPUTS
 % A    - Array Manifold (aka array matrix at all theta (complex))
 %        where A is Mxd, if radar has M elements and theta has d bearings,
 % C    - Covariance matrix
-% th   - bearings associated with A
+% th   - bearings associated with A 
 % n    - max number of signal sources (defaults to M-1)
+%
 % 
 %
 % OUTPUTS
@@ -30,10 +33,6 @@ function [DOA,idx,D,V] = music(A,C,th,n)
 % check that units are NOT dbm on C input
 % more compatibility/swappability with mle.m, mle_ap.m, etc
 %
-% Incorp these in from R2017b?:
-% islocalmin and islocalmax Functions: Detect local minima and maxima in data
-% minkand maxk Functions: Find the k smallest or largest elements in an arr
-%
 % ** ULA AND RA8 ** 
 % Need to look at peakfinder for ULA's which tend to get anomolous points
 % near the end of the pattern. Otherwise might need to adjust settings for
@@ -43,7 +42,7 @@ function [DOA,idx,D,V] = music(A,C,th,n)
 % because it can handle noise, which might be a characteristic of the DOA,
 % but it seems that it could be far simple. Needs a test with ULA, RA8 and
 % closely spaced sources. See: https://stackoverflow.com/questions/22583391/peak-signal-detection-in-realtime-timeseries-data
-
+% ... or just use peakfinder which might be good?
 
 % Check for test case
 if strcmp('--t',A), test_case, end
@@ -91,62 +90,21 @@ for j = 1:n
 end
 
 
+% PEAK FINDING
 
-% % USE FINDPEAKS
-% % requires signal processing toolbox .. and testing too 
-% %
-% %    [...] = findpeaks(...,'NPeaks',NP) specifies the maximum number of peaks
-% %     to be found. NP is an integer greater than zero. If not specified, all
-% %     peaks are returned. Use this parameter in conjunction with setting the
-% %     sort direction to 'descend' to return the NP largest peaks. (see
-% %     'SortStr')
-% % 
-% 
-% for i = 1:n
-%     % just output the indicies
-%     [~,idx{i}] = findpeaks(real(DOA(:,i)),'NPeaks',i,'SortStr','descend');
-% end
-% 
-% keyboard
-
-% Prealllocate
-idx = cell(n,1);
-
-% % Get indicies
-[~,idx{1}] = max(DOA(:,1));
-
-% Loop over remaining signals
-for i = 2:n
-        
-    % ALT PEAKFINDER.M
-    % sel = (max(x0)-min(x0))/4)
-    % some of the settings may need tweaking:
-    %
-    % Do this in log space
-    x = 10*log10(real(DOA(:,i)));
+if nargin < 5
+    % use peakfinder.m
+    % ie if no findpeaks input is given, default to the old way
+    idx = use_peakfinder(n,DOA,th);
     
-    % was dividing by 100
-    [idx{i},y] = peakfinder(x, (max(x)-min(x))/200, [], 1,1);
-    
-    % check for and remove end points
-         y =      y(~ismember(idx{i},[1 length(th)]));
-    idx{i} = idx{i}(~ismember(idx{i},[1 length(th)]));
-    
-    % get largest n peaks
-    if length(idx{i}) > i
-               
-        % plot(th,x), hold on
-        % plot(th(idx{i}),x(idx{i}),'ro')
-        % keyboard
-        
-        % get index of peaks to keep (k), then keep the i largest    
-        [~,k] = sort(y);
-        idx{i} = idx{i}(k(end+1-i:end));
-                
-    end
-    
+else
+    % use findpeaks.m
+    idx = use_findpeaks(DOA,n,mpp);
     
 end
+
+
+% NOTES ON OUTPUTS
 
 % NOTE 2:
 % outputting NaN index is sort of pointless. Just need later code (eg
@@ -175,6 +133,96 @@ end
 
 end
 
+function idx = use_peakfinder(n,DOA,th)
+% USE PEAKFINDER
+%
+% Keep this around since this is what I used for all the 2019 papers
+
+% Prealllocate
+idx = cell(n,1);
+
+% % Get indicies
+[~,idx{1}] = max(DOA(:,1));
+
+% Loop over remaining signals
+for i = 2:n
+        
+    % ALT PEAKFINDER.M
+    % sel = (max(x0)-min(x0))/4)
+    % some of the settings may need tweaking:
+    %
+    % Do this in log space
+    x = 10*log10(real(DOA(:,i))); 
+    
+    % was dividing by 100. I think use thresh = 0.5 for music-highest
+    % equivalent instead of []. See Kirincich et al. 2019
+    [idx{i},y] = peakfinder(x, (max(x)-min(x))/200, [], 1,1);
+    
+    % check for and remove end points
+         y =      y(~ismember(idx{i},[1 length(th)]));
+    idx{i} = idx{i}(~ismember(idx{i},[1 length(th)]));
+    
+    % get largest n peaks
+    if length(idx{i}) > i
+               
+        % plot(th,x), hold on
+        % plot(th(idx{i}),x(idx{i}),'ro')
+        % keyboard
+        
+        % get index of peaks to keep (k), then keep the i largest    
+        [~,k] = sort(y);
+        idx{i} = idx{i}(k(end+1-i:end));
+                
+    end
+    
+    
+end
+
+end
+
+function idx = use_findpeaks(DOA,n,mpp)
+% USE FINDPEAKS
+% requires signal processing toolbox .. and testing too 
+%
+%    [...] = findpeaks(...,'NPeaks',NP) specifies the maximum number of peaks
+%     to be found. NP is an integer greater than zero. If not specified, all
+%     peaks are returned. Use this parameter in conjunction with setting the
+%     sort direction to 'descend' to return the NP largest peaks. (see
+%     'SortStr')
+% 
+% NOTE
+% that the peak width this outputs could be a useful, radial metric-like,
+% metric
+
+%     [...] = findpeaks(...,'SortStr',DIR) specifies the direction of sorting
+%     of peaks. DIR can take values of 'ascend', 'descend' or 'none'. If not
+%     specified, DIR takes the value of 'none' and the peaks are returned in
+%     the order of their occurrence.
+%  
+%     [...] = findpeaks(...,'NPeaks',NP) specifies the maximum number of peaks
+%     to be found. NP is an integer greater than zero. If not specified, all
+%     peaks are returned. Use this parameter in conjunction with setting the
+%     sort direction to 'descend' to return the NP largest peaks. (see
+%     'SortStr')
+
+
+
+for i = n:-1:1
+    
+    % just output the indicies - ok to assume that the index of DOA and th
+    % are matched upt
+    
+    % [~,idx{i}] = findpeaks(real(DOA(:,i)),'NPeaks',i,'SortStr','descend');
+    % [pks,locs,wdth,prmn]= findpeaks(10*log10(real(DOA(:,i))),th,'MinPeakProminence',0.5); %'MinPeakHeight',1)
+    [~,idx{i}]= findpeaks( 10*log10(real(DOA(:,i))), ...
+                        'MinPeakProminence',mpp, ... % ); %'MinPeakHeight',1)
+                        'SortStr','descend', ...
+                        'NPeaks',i);
+
+end
+    
+end
+
 
 function test_case
 % TEST CASE
@@ -183,6 +231,45 @@ function test_case
 % De Paolo and Terrill Scripps report
 %
 % Lots of code from music.m
+
+% ----------------
+% LOCAL DEV TEST FOR PEAK PICKING
+% May 2020
+% lera test for findpeaks
+
+load /m_files/test_data/music/lera_test.mat
+
+[th,ix] = sort(th);
+A = A(:,ix);
+
+[DOA,idx,D,V] = music(A,C,th,n,0.2);
+
+for i = 1:numel(idx), plot(th,10*log10(real(DOA(:,i)))); hold on, end
+for i = 1:numel(idx), plot(th(idx{i}),10*log10(real(DOA((idx{i}),i))),'*'), end
+
+[DOA,idx,D,V] = music(A,C,th,n,1);
+
+% rerun it with a higher peak threshold
+for i = 1:numel(idx), plot(th,10*log10(real(DOA(:,i)))); hold on, end
+for i = 1:numel(idx), plot(th(idx{i}),10*log10(real(DOA((idx{i}),i))),'ro'), end
+
+
+keyboard
+
+
+% % DEV CODE
+% 
+% for i = 1:numel(idx)
+%     [pks,locs,wdth,prmn]= findpeaks(10*log10(real(DOA(:,i))),th,'MinPeakProminence',0.5); %'MinPeakHeight',1)
+%     
+%     plot(locs,pks,'m*')
+% end
+
+keyboard
+% ----------------
+
+
+% PREVIOUS TESTS
 
 % (APM,DOA,singleIdx,dualIdx)
 

@@ -6,6 +6,9 @@ function CS = cs_from_fft(fftn,CFG) %V1,V2,V3,CFG)
 % V1,V2,V3 - Doppler spectra, ie the output of the FFT performed on the
 %            Range data 
 % CFG      - Optional configuration specifying some of the outputs
+%
+% This function was made for simulation data, which assumes one range cell
+% at at time. Thus the input fftn is # antennas x # length(fft)
 
 
 % NOTES
@@ -112,7 +115,7 @@ CS.antenna23CrossSp = V2.*conj(V3)  ;
 end
 
 function CS = new_way(fftn,CS)
-% make the field names? See cs_struct.m ... maybe need a tool for this
+% 
 
 % get number of antennas
 m = size(fftn,1);
@@ -124,7 +127,6 @@ fftn = fftn.';
 % get field names (could also read these?), and corresponding row,col
 % indecies
 [fn,I,J] = cs_make_field_names(m);
-
 
 for i = 1:length(I)
         

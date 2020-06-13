@@ -9,5 +9,9 @@ function ccwE=cwN2ccwE(cwN)
 
 % This is the ugly, brute force method.
 ccwE=(abs(cwN-360))+90;
+
 i=find(ccwE>360);
+
 ccwE(i)=ccwE(i)-360;
+
+end

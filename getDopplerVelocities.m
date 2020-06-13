@@ -20,7 +20,7 @@ function [freqs,Vrad,dv] = getDopplerVelocities(p)
 % OUTPUTS:
 % freqs in Hz, 
 % Vrad in cm s^-1
-% dv, the doppler velocity bin width
+% dv, the doppler velocity bin width (cm s^-1)
 
 % TO DO
 % verify this works for 5, 24 and 42 Mhz. Check out the results vs SpecMap
@@ -128,6 +128,7 @@ wvLen = (c/txfreq) / 1e6;
 % df = 2 * k0 * dv  --> dv = df/(2*k0) 
 %
 % Should be the same as (-Vrad(1)+Vrad(end))/512
+% the 100 converts m to cm
 dv = (wvLen/2) * 100 * p.SwRfreqHz/p.fftLength;
 
 freqs = freqs(:);

@@ -214,6 +214,7 @@ APM = realImag2MagPhase(APM);
 % Add to README:
 APM.README.BEAR_Units = 'degCWN';
 APM.README.loop1Brg_Units = 'degCWN';
+APM.Units.BEAR = 'degCWN';
 
 % Add footer 
 APM.Footer.Names  = names;

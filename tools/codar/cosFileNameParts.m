@@ -108,7 +108,7 @@ switch NM.Type
 
     
     case {'RDLi','RDLm','RDLy','ELTm','ELTi','TRAK','TOTL','SEAS'}
-        stime=datenum(fileName(11:25),'yyyy_mm_dd_HHMM'); 
+        stime=datenum(fileName(end-16:end),'yyyy_mm_dd_HHMM'); 
         NM.SiteName=fileName(6:9);
                
     case {'Rng','Lvl'}

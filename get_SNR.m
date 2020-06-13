@@ -34,6 +34,9 @@ function  snr = get_SNR(CS,idx)
 
 % TO DO
 % finalize verification of these SNR numbers with SpectraPlotterMap
+%
+% See 2014_hamid_snr_from_eigenvalues.pdf for computing snr from the
+% eigenvalues,  detect_greater_than_two.m, and radar_simlulation_basic.m
 
 
 

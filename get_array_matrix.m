@@ -1,5 +1,5 @@
 function A = get_array_matrix(APM)
-% GET ARRAY MATRIX - Array matrix from APM struct for SeaSondes
+% GET ARRAY MATRIX - Array matrix from SeaSondes APM struct
 %  A = get_array_matrix(APM)
 % 
 % A is the Array Manifold Matrix (c.f. Van Trees 2002, pg 31), aka the
@@ -15,7 +15,7 @@ function A = get_array_matrix(APM)
 
 
 
-if isfield(APM,'A')
+if isfield(APM,'A') && ~isempty(APM.A)
     A = APM.A.';
     
 else

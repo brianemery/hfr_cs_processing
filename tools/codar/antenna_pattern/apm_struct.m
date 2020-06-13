@@ -1,5 +1,7 @@
 function APM = apm_struct(tf)
-%APM_STRUCT Initialize a standard APM structure
+% APM_STRUCT Initialize a standard APM structure
+% APM = apm_struct
+%
 % Initialize the APM output structure.
 %
 % Use these:
@@ -8,6 +10,14 @@ function APM = apm_struct(tf)
 % for field names (they come out of loop files)
 %
 % Specify/standardize that fields are column vectors
+%
+% Given the input 'true', creates an expanded APM struct for APMs derived
+% from ships of opportunity.
+%
+% Also when the array matrix is specified in the APM struct, orient it 
+% #bearings x #elements, while the output of get_array_matrix is output as
+% #elements x #bearings, eg:
+%     APM.A = APM.A.';
 
 % Copyright (C) 2009-2010 Brian M. Emery
 % June 2009
@@ -37,13 +47,14 @@ APM.CreateTimeStamp = datestr(now);
 vars = {'README','BEAR','A13R','A13RQ','A13I','A13IQ', ...
                         'A23R','A23RQ','A23I','A23IQ', ...
                         'A13M','A13P' ,'A23M' ,'A23P', ...
-                        'A33R','A33I','Units'};
+                        'A33R','A33I','Units','A'};
                    
 % create empties
 for i = 1:numel(vars)
         APM.(vars{i}) = [];               
 end
 
+APM.README.A = 'Array Matrix, #bearings x #elements';
 
 %------------------------------
 %  EXPANSION FOR AIS derived APM 

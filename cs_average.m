@@ -1,6 +1,6 @@
-function AV = cs_average(CS)
+function [AV,K] = cs_average(CS)
 % CS AVERAGE - compute mean of fields in multi element CS structs
-% CSA = cs_average(CS)
+% [CSA,K] = cs_average(CS)
 %
 % Uses all the data in the multi-element input ... robust to empties
 % 
@@ -11,6 +11,9 @@ function AV = cs_average(CS)
 % converted back to volts^2. "This is one of the simplest examples of 
 % statistics of non-Euclidean spaces." From: 
 % https://en.wikipedia.org/wiki/Mean_of_circular_quantities
+%
+% Now also provides a rough estimate of K, in that it outputs the number of
+% files in the average.
 %
 % SEE ALSO
 % cs_dbm2volts.m and related
@@ -30,6 +33,15 @@ if strcmp('--t',CS), test_case, return, end
 % get field names
 fn = cs_fieldnames(CS);
 
+
+% check for bad files/data, eg. one CSQ with the wrong amount of data
+sz = NaN(numel(CS),2);
+
+for i = 1:numel(CS), sz(i,:) = size(CS(i).(fn{1})); end
+
+CS = CS(ismember(sz,mode(sz),'rows'));
+
+
 % create output
 AV = CS(1);
 
@@ -41,6 +53,10 @@ for i = 1:numel(fn)
     % compute average
     AV.(fn{i}) = sum(X,3)./size(X,3); 
 end
+
+% provide for the output
+% K = size( cat(3,CSL.antenna3Self) ,3);
+K = size(X,3);
 
 
 % run on phases to if we have them
@@ -108,8 +124,10 @@ keyboard
 load /m_files/test_data/cs_ship_rm.mat CS
 
 
-[CS(1:5).ProcessingSteps] = deal({''});
-[CS(1:5).Units] = deal({''});
+[CS(1:end).ProcessingSteps] = deal({''});
+[CS(1:end).Units] = deal({''});
+[CS(1:end).freqs] = deal({''});
+[CS(1:end).Vrad] = deal({''});
 
 % empty out the center and see if averaging can handle it
 CS(3) = cs_struct(1);

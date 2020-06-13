@@ -68,8 +68,12 @@ end
 
 % INITIALIZE  
 
-% Compute frequencies
-[CS.freqs,CS.Vrad,fb] = getVelocities(CS.Header);
+% Compute frequencies ... now only if necessary 
+if ~isfield(CS,'freqs') || ~isfield(CS,'Vrad') || ~isfield(CS,'fb') 
+    [CS.freqs,CS.Vrad,fb] = getVelocities(CS.Header);
+else
+    fb = CS.fb;
+end
 
 
 % Define fields of CS file ... old and new

@@ -1,11 +1,12 @@
-function S = subsref_struct(S,idx,n,rc)
+function S = subsref_struct(S,idx,n,rc,fn)
 % SUBSREF STRUCT - apply indexing to fields in a structure
-% S = subsref_struct(S,i,n,rc)
+% S = subsref_struct(S,i,n,rc,fn)
 %
 % Applies the indexing given in i, of the fields in S that have the 
 % matching number of columns (n). Given a 4th input will apply the
 % indexing to the rows (1). Defaults to columns (rc = 2). Cell arrays
-% are now included, and input index array can be logical.
+% are now included, and input index array can be logical. 5th input can
+% be a cell list of fields to skip over.
 %
 % Recurses into substructures looking for fields of the same size to apply
 % the indexing to as well. 
@@ -23,7 +24,8 @@ function S = subsref_struct(S,idx,n,rc)
 % % Change the row indexing
 % d = subsref_struct(d,1:2,size(d,1),1)
 %
-% See also: work_fields
+% SEE ALSO
+% work_fields.m
 
 % Copyright (C) 2010 Brian M. Emery
 % Brian Emery 12 Jan 2010
@@ -39,6 +41,10 @@ function S = subsref_struct(S,idx,n,rc)
 
 if strcmp(S,'--t'), test_case, return, end
 
+% don't skip any by default
+if nargin < 5
+    fn = '';
+end
 
 % Apply to columns by default
 if nargin < 4 
@@ -64,7 +70,6 @@ end
 % Get field names to loop over
 nm = fieldnames(S); 
 
-
 % % experiment to make this faster, get only the field names we want to
 % % operate on ... actualy makes it slower. The anon function seems to be the
 % % problem
@@ -77,6 +82,9 @@ s1 = structfun(@ischar,S);
 s2 = structfun(@isstruct,S);
 
 nm = nm(~s1 & ~s2);
+
+% skim any named fields
+nm = setdiff(nm,fn); 
 
 
 for j = 1:numel(nm)
@@ -105,7 +113,7 @@ if any(s2)
 
     for i = 1:numel(nm)
         if numel(S.(nm{i})) == 1
-            S.(nm{i}) = subsref_struct(S.(nm{i}),idx,n,rc);
+            S.(nm{i}) = subsref_struct(S.(nm{i}),idx,n,rc,fn);
         end
     end
     

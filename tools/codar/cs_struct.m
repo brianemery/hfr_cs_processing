@@ -6,6 +6,7 @@ function CS = cs_struct(N,M)
 % 
 % NEW 2nd input, allows field names for arbitrary arrays with M elements
 % 
+% DATA SPECIFICATION
 % Standard format has the matricies with
 % dimensions nfft x # range cells
 %

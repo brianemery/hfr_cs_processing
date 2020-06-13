@@ -46,6 +46,11 @@ M = smart_struct_cat(varargin{:});
 
 % M = [varargin{:}];
 
+% return early if empty ... useful for realtime code
+if isempty(M), S = M; return, end
+
+
+
 % get field names
 fn = fieldnames(M);
 

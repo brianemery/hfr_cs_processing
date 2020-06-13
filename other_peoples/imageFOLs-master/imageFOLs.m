@@ -1,7 +1,7 @@
-function [FOreg, FOregi, Alims]=imageFOLs(ant3_volt,iFBragg,v_incr,user_param)
+function [FOreg, FOregi, Alims]=imageFOLs(ant3_volt,iFBragg,v_incr,user_param,islera)
 % IMAGE FOL - define first order region using image processing
 % 
-% [FOreg,FOregi]=imageFOLs(Data,iFBragg,v_incr,snr_min,goplot);
+% [FOreg,FOregi]=imageFOLs(Data,iFBragg,v_incr,user_param,islera);
 %
 %  uses Marker-Controlled Watershed Segmentation (available in the Matlab
 %   image processing tool box) to find and separate
@@ -16,13 +16,13 @@ function [FOreg, FOregi, Alims]=imageFOLs(ant3_volt,iFBragg,v_incr,user_param)
 %   -getpeaks.m
 %
 % INPUTS
-%   ant3  -- structure of Seasonde's *.cs4 file information
+%   data         --  cross spectra matrix (nRC x nFFT)
+%   iFBragg      --  indices of the +/- Bragg frequencies
+%   v_incr       --  velocity resolution of spectra (m/s)
+%   user_param   --  [vel_scale max_vel snr_min];  
+%   islera       --  boolean set to true for LERA data
 %
-%   iFBragg -- indices of the +/- Bragg frequencies
-%
-%   v_incr --  velocity resolution of spectra (m/s)
-%
-%   user_param=[vel_scale max_vel snr_min];  where:
+% where:
 %
 %        vel_scale  -- velocity scale in cm/s used to set N, the core smoothing
 %                        lengthscale used throughout imageFOLs.  This can be defined
@@ -39,7 +39,7 @@ function [FOreg, FOregi, Alims]=imageFOLs(ant3_volt,iFBragg,v_incr,user_param)
 %
 %        snr_min -- minimum signal to noise ratio allowed in outgoing FOreg
 %                       suggested value= 5.
-%
+
 %
 %   !!! additional constants are set internally but do not normally vary with
 %             site/conditions  !!!
@@ -72,10 +72,15 @@ function [FOreg, FOregi, Alims]=imageFOLs(ant3_volt,iFBragg,v_incr,user_param)
 %
 % 2017 04 10 Modification by Brian Emery
 %            Minor refactoring 
-% %
+% 2019 09 26 Line 245 added if thens to handle empty values
+% 2019 10 25 Added code/functionality from lera_imageFOLs_v5.m so this can now handle
+%            both seasonde and lera. Created a test case for this in the
+%            function imageFOLs_dev_test.m 
+
+if nargin < 5, islera = false; end
 
 % Set plotting switches
-goplot = [0 0];
+goplot = [0 0 ];
 
 
 %%%%%%%%%%%% User-set parameters for processing %%%%%%%%%%%%
@@ -113,28 +118,39 @@ Bragg_noise_flag=[7 .444];
 
 
 
-%%%%%%%%%%%% Prep cross-spectra of ant3  %%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%% Prep cross-spectra %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%    -estimating and subtracting range-dependent background energy
 %%%    -normalizing by the range-dependent max energy
 
-%start by estimating the gain
-gain3 = 10*log10(abs(ant3_volt)) + (-40. + 5.8);  %only works with plus...typo in COS manual
-[n m]=size(gain3);
+if ~islera
+    
+    % start by estimating the gain
+    gain3 = 10*log10(abs(ant3_volt)) + (-40. + 5.8); 
+        
+    % set minimium value for gain3
+    i=find(gain3<min_dB); gain3(i)=min_dB;
+    
+else
+    % code here derived from lera_imageFOLs_v5 but for 2d matricies
+    gain3 = 20*log10(abs(ant3_volt));
+    
+end
 
-%set minimium value for gain3
-i=find(gain3<min_dB); gain3(i)=min_dB;
+[n,m] = size(gain3);
+
+
 
 %%%%% filter cross-spectra to smooth gain3  %%%%%%%
 %initially, use a lengthscale based on the spectra length of vel_scale
 %velocity change using v_incr
 N=round(vel_scale/(v_incr*100));   %size of typical vel change
-if (N/2)~=round(N/2); %N is odd reduce by 1
+if (N/2)~=round(N/2) %N is odd reduce by 1
     N=N-1;
 end
 
 % set the maximum lengthscale
 N_max=round(max_vel/(v_incr*100));   %size of the max vel change
-if (N_max/2)~=round(N_max/2); %N is odd reduce by 1
+if (N_max/2)~=round(N_max/2) %N is odd reduce by 1
     N_max=N_max-1;
 end
 
@@ -152,6 +168,7 @@ gain3(:,ci)=nan;
 %%%
 %set up left and right hand side indices
 li=1:m/2;  ri=m/2:m;
+
 %get max, mean, and mean background for each range cell for each half
 lmm=[nanmax(gain3(:,li)')'  nanmean(gain3(:,li)')' nanmean(gain3(:,li(1:N))')'];
 rmm=[nanmax(gain3(:,ri)')' nanmean(gain3(:,ri)')' nanmean(gain3(:,ri(end-N+1:end))')'];
@@ -206,6 +223,7 @@ h2(:,ri)=h2(:,ri)./[ (rmml(:,1)-rmml(:,2)) *ones(1,length(ri))  ];
 %remake center energy to 0s
 h2(:,ci)=0;
 i=find(h2(:)<0); h2(i)=0;
+i=find(h2(:)>1.5); h2(i)=0;   % a weird fix for no power anywhere in the range cell, max = min and h2 blows up.
 i=find(isnan(h2)==1); h2(i)=0;
 
 
@@ -220,6 +238,8 @@ i=find(isnan(h2)==1); h2(i)=0;
 % N_factor=[  mean(mean(gain3(:,[ (1:iFBragg(1)-3*N) (iFBragg(1)+3*N:ci(1)-1)] ))) - lmml(n,3) ;
 %      mean(mean(gain3(:,[ (ci(end)+1:iFBragg(2)-3*N) (iFBragg(2)+3*N:m)] ))) - rmml(n,3) ]';
 
+% ---- BE: this code deals with both halves of the spectrum ----
+
 %dynamically define were the range-mean 2nd order region is, by looking for
 %  the mean inner edge of the trough between 2nd and first order.
 mm=mean(gain3);
@@ -230,17 +250,28 @@ if goplot(2)==1
     plot(mm); hold on; plot(pks,mm(pks),'r+'); title('Range averaged spectra, to look for start of 2nd order')
     
 end
-maxs=[find(mm==max(mm(1:ci(1)))) find(mm==max(mm(ci(end):m)))];
-%find the peak that is to the left and right of each bragg peak, provided
-%it is located in the correct quarter of the spectrum, correct if not.
-pks2=nan.*ones(1,4);
-i=find(pks<maxs(1));  pks2(1)=pks(i(end));
-i=find(pks>maxs(1) & pks<ci(1)); if isempty(i)==1; pks2(2)=ci(end)+1; else; pks2(2)=pks(i(1)); end
-i=find(pks<maxs(2) & pks>ci(end)); if isempty(i)==1; pks2(3)=ci(end)+1; else; pks2(3)=pks(i(end)); end
-i=find(pks>maxs(2));   pks2(4)=pks(i(1));
+
+% maxs are the tips of the bragg peaks
+% old way
+% maxs=[find(mm==max(mm(1:ci(1)))) find(mm==max(mm(ci(end):m)))];
+% new that looks for the peak within bragg+/-N (from lera_imageFOL_v5.m, by BE)
+maxs=[find(mm==max(mm(iFBragg(1)-N:iFBragg(1)+N))) find(mm==max(mm(iFBragg(2)-N:iFBragg(2)+N)))];
+
+
+% find the peak that is to the left and right of each bragg peak, provided
+% it is located in the correct quarter of the spectrum, correct if not.
+pks2=nan.*ones(1,4); 
+
+% --- BE: added two if then statements here to deal with empty i's. 
+i = find(pks<maxs(1));               if isempty(i), pks2(1)=1;         else, pks2(1)=pks(i(end)); end
+i = find(pks>maxs(1) & pks<ci(1));   if isempty(i), pks2(2)=ci(end)+1; else, pks2(2)=pks(i(1));   end
+i = find(pks<maxs(2) & pks>ci(end)); if isempty(i), pks2(3)=ci(end)+1; else, pks2(3)=pks(i(end)); end
+i = find(pks>maxs(2));               if isempty(i), pks2(4)=pks(end);  else,  pks2(4)=pks(i(1));  end  
+
 % define the distance, in indices from the bragg peaks to each of the inner
 % edges of the defined second order regions.
 dpksbragg=pks2-[iFBragg(1)*ones(1,2) iFBragg(2)*ones(1,2)];
+
 % define the start (outer) and ends (inner points) of the 2nd order spectrum
 % around the Bragg peaks
 i=find(abs(pks2-[iFBragg(1)*ones(1,2) iFBragg(2)*ones(1,2)])<3*N);
@@ -251,15 +282,15 @@ ends(i)=pks2(i);
 
 % okay, now define what the noise factor is as the difference between the
 % 2nd order energy and the noise floor
-N_factor=[  mean(mean(gain3(:,[(starts(1):ends(1)) (ends(2):starts(2))] ))) - lmml(n,3) ;
-    mean(mean(gain3(:,[ (starts(3):ends(3)) (ends(4):starts(4))] ))) - rmml(n,3) ]';
+N_factor=[  mean(mean(gain3(:,[(starts(1):ends(1))  (ends(2):starts(2))] ))) - lmml(n,3) ;
+            mean(mean(gain3(:,[ (starts(3):ends(3)) (ends(4):starts(4))] ))) - rmml(n,3) ]';
 
 %N_factor_scale=4./sqrt([min(abs(dpksbragg(1:2))) min(abs(dpksbragg(3:4)))]);   %old arbitrary method
 %N_factor_scale=[mean(abs(dpksbragg(1:2))) mean(abs(dpksbragg(3:4)))];
 N_factor_scale=[min(abs(dpksbragg(1:2))) min(abs(dpksbragg(3:4)))];
 
 %use a banket adjustment to scale up N_factor if the 2nd order energy is closer than 3*N
-i=find(N_factor_scale<N*3); N_factor_scale(i)=2;
+i=find(N_factor_scale<N*3);  N_factor_scale(i)=2;
 i=find(N_factor_scale>=N*3); N_factor_scale(i)=1;
 
 %%% adjust velocity length scale (N) by N_factor to
@@ -267,6 +298,7 @@ i=find(N_factor_scale>=N*3); N_factor_scale(i)=1;
 %%%   The additional of N_factor_scale acts to further decrease N if the
 %%%   2nd order energy is close to the Bragg as a big swell would create
 DN=round([N - N_factor.*(N_factor_scale)]);
+
 %%%   Note that at this point DN can really small or be negative, if the conditions are
 %%%   crappy. Near 0 or negative values are not really viable to continue
 %%%   with, and rather then install an additional arbitrary non-linear
@@ -276,6 +308,7 @@ DN=round([N - N_factor.*(N_factor_scale)]);
 %%%
 % insert min value of DN if appropriate
 i=find(DN<=min_DN); DN(i)=min_DN;
+
 %show what values you are moving forward with
 disp(sprintf('ImageFOLs (DN N_factor): %2.0f %2.0f %2.2f %2.2f\n',DN,N_factor.*(N_factor_scale)))
 
@@ -293,6 +326,7 @@ end
 
 %clear outgoing variables
 FOregi=[]; FOreg=[]; DL=[]; Alims=[]; Isave=[];
+dn_save=[nan nan];
 
 %%% loop over each half of the spectra and compute segments separately.
 for ii=1:2
@@ -379,6 +413,9 @@ for ii=1:2
                      imshow(I2); set(gca,'ydir','normal') 
                      title('Regional maxima superimposed on original image (I2)')
             end
+            %    Save dn
+            dn_save(ii)=dn;
+
         else
             disp(['skipping the ' num2str(ii) ' half for lack of spectral energy'])
             DL(:,si)=nan.*H;
@@ -414,7 +451,7 @@ FOreg_all(is)=DL(is); FOreg_all(is)=1;
 
 %ignore results inside FOreg with snr<snr_min
 i=find(h1(is)>=snr_min);
-FOregi=FOregi_all(i,:);
+% FOregi=FOregi_all(i,:);
 %get outline of FOL region and add in mag
 FOreg=0*DL; FOreg(is(i))=1;
 
@@ -435,61 +472,55 @@ end
 %whatever is used for FOreg_all, make sure the edges are zeros.
 FOreg_all(:,[1:iFBragg(1)-N_max iFBragg(1)+N_max:iFBragg(2)-N_max iFBragg(2)+N_max:end])=0;
 
+% Code from lera_imageFOLs_v5.m :
+% just the points with SNR>5
+FOreg(:,[1:iFBragg(1)-N_max iFBragg(1)+N_max:iFBragg(2)-N_max iFBragg(2)+N_max:end])=0;
+
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % translate output into something equvalent to COS's Alims
 %define the outer edge of the bragg region as the first spectral point
 % inside of the Bragg region segment. Bounded by iFBragg+/-N_max
-dd=diff(FOreg_all')';
 
+dd=diff(FOreg_all')';
 lhs=iFBragg(1).*ones(n,2); rhs=iFBragg(2).*ones(n,2);
-for ii=1:n
-    if ii==1;
-        i=[0 find(dd(1,:)~=0) m];
-        ifl=find(i<iFBragg(1));       ifr=find(i>iFBragg(1));
-        if abs(i(ifl(end))-iFBragg(1))<N_max; lhs(ii,1)=i(ifl(end)); end
-        if abs(i(ifr(1))-iFBragg(1))<N_max; lhs(ii,2)=i(ifr(1)); end     
-        ifl=find(i<iFBragg(2));     ifr=find(i>iFBragg(2));
-        if abs(i(ifl(end))-iFBragg(2))<N_max; rhs(ii,1)=i(ifl(end)); end
-        if abs(i(ifr(1))-iFBragg(2))<N_max; rhs(ii,2)=i(ifr(1)); end
-    else  %ii>1
-        %handle left side of peak first.
-        i=find(dd(ii,:)==1);
-        if isempty(i)==0;
-            [s,is]=sort(abs(i-lhs(ii-1,1)));
-            lhs(ii,1)=i(is(1));
-            [s,is]=sort(abs(i-rhs(ii-1,1)));
-            rhs(ii,1)=i(is(1));
-        end
-        %handle right side of peak second.
-        i=find(dd(ii,:)==-1);
-        if isempty(i)==0;
-            [s,is]=sort(abs(i-lhs(ii-1,2)));
-            lhs(ii,2)=i(is(1))+1;
-            [s,is]=sort(abs(i-rhs(ii-1,2)));
-            rhs(ii,2)=i(is(1))+1;
-        end        
-        if diff(lhs(ii,:))<N/4;  %no real data
-            lhs(ii,:)=iFBragg(1);
-        end
-        if diff(rhs(ii,:))<N/4;  %no real data
-            rhs(ii,:)=iFBragg(2);
-        end
-    end 
+
+
+% BE comment: this is where SS and LERA code deviate significantly, which
+% is why I put these into subfunctions
+% 
+% This code loops over range cells to use information about the 2nd order
+% that is in the close-by range cells
+
+if islera
+    
+    [lhs,rhs] = set_outer_limits_lera(dd,iFBragg,lhs,rhs,n,m,N_max,FOreg);
+    keyboard
+    
+else
+
+    [lhs,rhs] = set_outer_limits_ss(dd,iFBragg,lhs,rhs,n,m,N_max,N);
+
 end
 
 %redefine outputs....
 %redefine lhs and rhs as Alims
 Alims=[lhs rhs];
+
 %redefine FOreg_all and FOregi,  FOreg
 FOreg_all=0.*DL;
 for ii=1:n
     FOreg_all(ii,[Alims(ii,1):Alims(ii,2) Alims(ii,3):Alims(ii,4)])=1;
 end
+
 is=find(FOreg_all==1);
 FOregi_all=[y(is) x(is)];
+
 %ignore results inside FOreg with snr<snr_min
 i=find(h1(is)>=snr_min);
 FOregi=FOregi_all(i,:);
+
 %get outline of FOL region and add in mag
 FOreg=0*DL; FOreg(is(i))=1;
 
@@ -515,3 +546,169 @@ end
 
 
 return
+
+end
+
+function [lhs,rhs] = set_outer_limits_ss(dd,iFBragg,lhs,rhs,n,m,N_max,N)
+    
+for ii=1:n
+    
+    % special treatment for first RC
+    if ii==1
+        i = [0 find(dd(1,:)~=0) m];
+        
+        ifl = find(i<iFBragg(1));       
+        ifr = find(i>iFBragg(1));
+        
+        if abs(i(ifl(end))-iFBragg(1))<N_max; lhs(ii,1)=i(ifl(end)); end
+        
+        if abs(i(ifr(1))-iFBragg(1))<N_max; lhs(ii,2)=i(ifr(1)); end  
+        
+        ifl=find(i<iFBragg(2));     
+        ifr=find(i>iFBragg(2));
+        
+        if abs(i(ifl(end))-iFBragg(2))<N_max; rhs(ii,1)=i(ifl(end)); end
+        
+        if abs(i(ifr(1))-iFBragg(2))<N_max; rhs(ii,2)=i(ifr(1)); end
+        
+    else 
+        
+        %handle left side of peak first.
+        i=find(dd(ii,:)==1);
+        
+        if isempty(i)==0
+            
+            [s,is]=sort(abs(i-lhs(ii-1,1)));
+            lhs(ii,1)=i(is(1));
+            
+            [s,is]=sort(abs(i-rhs(ii-1,1)));
+            rhs(ii,1)=i(is(1));
+        end
+        
+        %handle right side of peak second.
+        i=find(dd(ii,:)==-1);
+        
+        if isempty(i)==0
+            
+            [s,is]=sort(abs(i-lhs(ii-1,2)));
+            lhs(ii,2)=i(is(1))+1;
+            
+            [s,is]=sort(abs(i-rhs(ii-1,2)));
+            rhs(ii,2)=i(is(1))+1;
+            
+        end        
+        
+        % handle cases with no real data
+        if diff(lhs(ii,:))<N/4   
+            lhs(ii,:)=iFBragg(1);
+        end
+        
+        if diff(rhs(ii,:))<N/4   
+            rhs(ii,:)=iFBragg(2);
+        end
+        
+    end 
+end
+
+
+
+end
+
+function [lhs,rhs] = set_outer_limits_lera(dd,iFBragg,lhs,rhs,n,m,N_max,FOreg)
+%
+% Code from lera_imageFOLs_v5
+%
+% ... many redundancies in this that should be simplified ...
+
+for ii=4:n  %start this at RC 4 to be removed from wave returns in first RCs
+    %%% if in the first RC, be careful to set the limits as close to the
+    %%% Bragg line as possible to limit thes potential for 2nd-order swell
+    %%% inclusion at low range cells,  i.e. a ridge line exists along the 
+    %%% outer edge of the bragg, but curves back down to low RCs to include
+    %%% 2nd order  (mostly a 25 MHZ problem.)
+    if ii==3
+        i=[0 find(dd(4,:)~=0) m];  %start this at rc3 not 1
+        %For the left side 
+        ifl=find(i<iFBragg(1));       ifr=find(i>iFBragg(1));    %find the ridges to the left and right of the bragg line
+         fs=[(i(ifl(end))-iFBragg(1)) (i(ifr(1))-iFBragg(1))];
+        if fs(1)>=-N_max & fs(1)<=0; lhs(ii,1)=i(ifl(end)); end   % place the left limit at the first ridge to the left of the bragg line that is less then N_max
+        if fs(2)<=N_max & fs(2)>=0; lhs(ii,2)=i(ifr(1)); end       % place the right limit at the first ridge to the right of the bragg line that is less then N_max
+
+        % for the right side
+        ifl=find(i<iFBragg(2));     ifr=find(i>iFBragg(2));
+         fs=[(i(ifl(end))-iFBragg(2)) (i(ifr(1))-iFBragg(2))];
+        if fs(1)>=-N_max & fs(1)<=0; rhs(ii,1)=i(ifl(end)); end   % place the right limit at the first ridge to the right of the bragg line that is less then N_max
+        if fs(2)<=N_max & fs(2)>=0; rhs(ii,2)=i(ifr(1)); end     % place the right limit at the first ridge to the right of the bragg line that is less then N_max
+   %%% for the rest of the RC's 
+    else  %ii>1
+        %find the beginning and end of each segment at this range cell
+        istart=find(dd(ii,:)==1); iend=find(dd(ii,:)==-1);
+        if length(istart)~=length(iend) ; disp('segment error'); sdfasfasfad; return; end 
+        %eliminate those segments that have no energy in the bragg region
+        for i=1:length(istart)
+            if isempty(intersect(istart(i):iend(i),find(FOreg(ii,:)==1)))==1;
+                istart(i)=nan; iend(i)=nan;
+            end
+        end        
+    istart=istart(~isnan(istart)); iend=iend(~isnan(iend));   %condense
+
+      %%% now proceed to find the segments that overlap best        
+        %handle left side of each of the peaks first. 
+        if isempty(istart)==0
+            [s,is]=sort(abs(istart-lhs(ii-1,1)));   %for the lhs
+             if abs(istart(is(1))-iFBragg(1))<=N_max; lhs(ii,1)=istart(is(1)); end  %pick the one that is closest to the previous and within Nmax of the Bragg line
+            %fix this estimate if the whole FOL is on one side of the Bragg
+            %and there is a second segment that wraps thru bragg that I'm missing
+             if istart(is(1))-iFBragg(1) > 0;  %it should be odd to have the starting value be on the wrong side of the bragg line
+                if is(1)>1 %there is a start to the left of this one
+                    if istart(is(1)-1)-iFBragg(1)<0 %the istart to the left of the shortest path is on the correct side of the Bragg line
+                        lhs(ii,1)=istart(is(1)-1);   %use this one instead
+                    end
+                end
+             end
+             
+            [s,is]=sort(abs(istart-rhs(ii-1,1)));   %for the rhs
+             if abs(istart(is(1))-iFBragg(2))<=N_max; rhs(ii,1)=istart(is(1)); end
+             %fix this estimate if the whole FOL is on one side of the Bragg
+            %and there is a second segment that wraps thru bragg that I'm missing             
+             if istart(is(1))-iFBragg(2) > 0  %it should be odd to have the starting value be on the wrong side of the bragg line
+                if is(1)>1 %there is a start to the left of this one
+                    if istart(is(1)-1)-iFBragg(2)<0 & abs(istart(is(1)-1)-iFBragg(2))<N_max %the istart to the left of the shortest path is on the correct side of the Bragg line
+                        rhs(ii,1)=istart(is(1)-1);   %use this one instead
+                    end
+                end
+             end
+        end
+        
+        %handle right side of peak second.
+        if isempty(iend)==0;
+            [s,is]=sort(abs(iend-lhs(ii-1,2)));   %for the lhs
+            if abs(iend(is(1))+1-iFBragg(1))<=N_max; lhs(ii,2)=iend(is(1))+1; end
+            %fix this estimate if the whole FOL is on one side of the Bragg
+            %and there is a second segment that wraps thru bragg that I'm missing
+              if iend(is(1))-iFBragg(1) < 0  %it should be odd to have the ending value be on the wrong side of the bragg line
+                if length(is)-is(1)>0 %there is an end to the right of this one
+                    if iend(is(1)+1)-iFBragg(1) > 0 & abs(iend(is(1)+1)-iFBragg(1))<N_max %the iend to the right of the shortest path is on the correct side of the Bragg line
+                        lhs(ii,2)=iend(is(1)+1);   %use this one instead
+                    end
+                end
+              end
+             
+            [s,is]=sort(abs(iend-rhs(ii-1,2)));   %for the rhs
+            if abs(iend(is(1))+1-iFBragg(2))<=N_max; rhs(ii,2)=iend(is(1))+1; end
+            %fix this estimate if the whole FOL is on one side of the Bragg
+            %and there is a second segment that wraps thru bragg that I'm missing
+            if iend(is(1))-iFBragg(2) < 0;  %it should be odd to have the ending value be on the wrong side of the bragg line
+                if length(is)-is(1)>0 %there is an end to the right of this one
+                    if iend(is(1)+1)-iFBragg(2) > 0 %the iend to the right of the shortest path is on the correct side of the Bragg line
+                        rhs(ii,2)=iend(is(1)+1);   %use this one instead
+                    end
+                end
+             end
+
+        end        
+    end  
+end
+
+
+end

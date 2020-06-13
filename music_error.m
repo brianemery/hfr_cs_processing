@@ -12,7 +12,7 @@ function err = music_error(A,C,th,K,n,ix) %,SNR)
 % th  - bearing (in degrees) associated with A
 % K   - number of data snapshots
 % n   - number of signals assumed
-% ix  - the index of the DOA estimate
+% ix  - the index of the DOA estimate (or esimates? - need to clarify)
 % % SNR - (dB) external SNR estimate to use instead of eigenvalues for SNR ...
 %
 % OUPUT
@@ -35,12 +35,16 @@ function err = music_error(A,C,th,K,n,ix) %,SNR)
 % Version 29-Nov-2016 15:48:16
 
 % TO DO
+% - SN89 eqn 7.7a seems to apply and it much simpler ...
+%
 % - Fix for ULA test:
 %   -try using average of noise eigenvectors for sigma
 %   -build test using ULA
 %
 % - This holds for sufficiently large K (N in the paper). How few is too
 %   few? Need to test (K > m antennas in paper)
+%
+% - Should return two outputs when n=2, incl. NaN? See doa_on_range_cell.m
 %
 % DONE
 % - Investigate the use of the smallest eigen value as an estimate of the

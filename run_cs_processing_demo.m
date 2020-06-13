@@ -22,7 +22,7 @@ function run_cs_processing_demo
 site = 'BML1';  % same as site file name in radial file
 
 % Main Data Folder (Has CS, RDL subdirs and APMs in it)
-wd = '/code_repo/hfr_cs_processing/data/BML1';
+wd = '/Users/codar/Downloads/BML1';
 
 % apm file to use
 apm_file = [wd '/APM/MeasPattern_BML1.txt'];

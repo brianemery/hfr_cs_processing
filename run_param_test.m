@@ -8,7 +8,7 @@ function [Pvalues,testResult] = run_param_test(eigValues,eigVectors,A,dualIdx,P)
 %
 % INPUTS 
 % eigValues,eigVectors - of the covariance matrix
-% A                    - antenna pattern data matrix 
+% A                    - antenna pattern data matrix ( m antennas x nbearings )
 % dualIdx              - two indicies of the APM bearings (dual brg soln)
 % P                    - the MUSIC parameters, eg [20 10 3] or [40 20 2]
 %
@@ -20,7 +20,18 @@ function [Pvalues,testResult] = run_param_test(eigValues,eigVectors,A,dualIdx,P)
 % SeaSonde_Radial_Processing.pdf
 % Radar Angle Determination with MUSIC Direction Finding, Nov 1999, U.S. Patent 5,990,834
 %
-% See also:  apply_test_result.m
+% NOTES
+% % plot the parameters in 3d space with the cube of dual == true
+% plot3(S.Params(:,1),S.Params(:,2),S.Params(:,3),'.'), hold on
+% grid
+% xlabel('P1'),ylabel('P2'),zlabel('P3')
+% axis([0 100 0 100 0 20])
+% h = patch([0 40 40 0 0],[0 0 20 20 0],[2 2 2 2 2],'c');
+% h = patch([40 40 40 40 40],[0 20 20 0 0],[2 2 100 100 2 ],'c');
+% h = patch([0 40 40 0 0],[20 20 20 20 20],[2 2 100 100 2 ],'c');
+% 
+%
+% See also:  apply_test_result.m, detection_codar_post_proc.m 
 
 % Brian Emery 3 Giugno 2008
 % Notes:
@@ -103,6 +114,7 @@ Pvalues(2) = real(sigPowers(end))./real(sigPowers(end-1));
 % than P3.
 Pvalues(3) = real(prod(diag(S)) ./ prod(S([2 3])) );
 
+% if isnan(Pvalues(3)), keyboard, end
 
 % Run test (TRUE IF DUAL BEARING)
 if Pvalues(1) < P(1) && Pvalues(2) < P(2) && Pvalues(3) > P(3)

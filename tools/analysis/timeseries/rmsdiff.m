@@ -1,13 +1,14 @@
-function [rmsd,bias,N]=rmsdiff(a,b)
-% RMSDIFF.M
-% [rmsd, bias, N]=rmsdiff(x,y);
+function [rmsd,bias,N,mae]=rmsdiff(a,b)
+% RMSDIFF.M - RMS differences 
+% [rmsd, bias, N, mae]=rmsdiff(x,y);
 % Computes the unbiased root-mean-square difference
 % between 2 timeseries. This function assumes that 
 % input data time increments columnwise, allowing it
 % to accept matricies. Bias's, the difference of the
 % means, is output.
 %
-% Also outputs the old rms diff for comparison
+% Also outputs the old rms diff for comparison, and now
+% and the mean absolute error (MAE)
 %
 % see also rsquared.m, mean_noNaN.m
 %
@@ -30,10 +31,10 @@ ad=a'; bd=b';
 c=ad+bd; 
 i=isnan(c); 
 ad(i)=0; bd(i)=0;
-abar=(sum(ad)./sum(~i))'; bbar=(sum(bd)./sum(~i))';
+abar=(sum(ad,1)./sum(~i,1))'; bbar=(sum(bd,1)./sum(~i,1))';
 
 % compute N
-N=sum(~i);
+N=sum(~i,1);
 
 % compute bias
 bias=abar-bbar;
@@ -44,7 +45,12 @@ del=(ad-(abar*ones(1,size(ad,1)))')-(bd-(bbar*ones(1,size(bd,1)))');
 
 % compute rms diff, again using careful treatment of NaN's
 del(i)=0;
-rmsd=sqrt(sum(del.^2)./(sum(~i)))';
+rmsd=sqrt(sum(del.^2,1)./N)'; % previously ./(sum(~i,1))
+
+% compute mae https://en.wikipedia.org/wiki/Mean_absolute_error
+mae = (sum(abs(del),1)./N)';
+
+
 
 % % output rms from old method for comparison
 % rmsold=oldmethod(a,b);

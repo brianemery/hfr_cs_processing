@@ -89,8 +89,8 @@ while any(d > eps)
     k = k+1;  % disp(num2str(k))
     
     % Put a break in here  (Viberg et al 1991 uses max 30 iterations)
-    if k >= 100 % see experiment_mle_ap_iterations.m for details
-        disp('MLE: 100 iterations reached, terminated')
+    if k >= 200 % see experiment_mle_ap_iterations.m for details
+        disp('MLE: 200 iterations reached, terminated')
         %keyboard
         break
     end
@@ -187,8 +187,16 @@ end
 [ML,thi] = max(real(tr));
 
 
-% plot(real(tr)), hold on
-% plot(thi,real(tr(thi)),'*')
+% % CODE FOR ERROR EST IN PROG
+% keyboard
+% 
+% % plot(real(tr)), hold on
+% % plot(thi,real(tr(thi)),'*')
+% 
+% 
+% th = 100:0.1:359;
+% xq = interp1(real(tr),th,0.5*ML,'interp')
+% 
 
 end
 

@@ -1,5 +1,6 @@
 function LonLat = rangeBear2LonLat(RangeBear,SiteOrigin)
 % RANGE BEAR TO LON LAT - mash up of other functions for a short cut
+% LonLat = rangeBear2LonLat(RangeBear,SiteOrigin)
 % 
 % INPUT
 % input bearings are usually ccwE, so assume that is the case
@@ -8,6 +9,9 @@ function LonLat = rangeBear2LonLat(RangeBear,SiteOrigin)
 %
 % EXAMPLE
 %
+% You know, m_fdist.m does this using cwN inputs ...
+%
+% See also, compute_heading.m ...
 
 % Copyright (C) 2017 Brian Emery
 %

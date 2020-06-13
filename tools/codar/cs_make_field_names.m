@@ -4,7 +4,7 @@ function [fn,I,J] = cs_make_field_names(M)
 %
 % Names for auto and cross spectra of the upper triangle 
 %
-% see also, cs_struct.m, cs_from_fft.m, cs_fieldnames.m
+% see also, cs_struct.m, cs_from_fft.m, cs_fieldnames.m, doa_column_index.m
 
 % Copyright (C) 2017 Brian Emery
 
