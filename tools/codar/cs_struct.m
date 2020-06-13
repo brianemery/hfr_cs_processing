@@ -47,6 +47,9 @@ if nargin > 0
     
 end
 
+CS.freqs =[];
+CS.Vrad = [];
+
 
 end
 
