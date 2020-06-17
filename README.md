@@ -22,7 +22,8 @@ finding methods.
 
 
 HOW TO USE IT
-- download it and add the unzipped directory to your MATLAB path
+- download it and cd to the unzipped directory
+- run install_hfr_cs_proc.m to modify the MATLAB path
 - run the demo to make sure it works (run_cs_processing_demo.m)
 - edit run_cs_processing.m for more advanced applications 
 - edit doa_on_cs.m (~line 80) to include the use of parfor 

@@ -242,6 +242,9 @@ errorbarx(S.U.RangeBearHead(iy,2),S.U.RadComp(iy),S.U.Err(iy))
 iz = find(S.L.RangeBearHead(:,1) > 10 & S.L.RangeBearHead(:,1) < 12);
 plot(S.L.RangeBearHead(iz,2),S.L.RadComp(iz),'^')
 
+xlabel('Bearing')
+ylabel('Radial Velocity')
+
 
 % look at some spectra
 
