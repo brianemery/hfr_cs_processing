@@ -14,13 +14,17 @@
 wd = fileparts( mfilename('fullpath') );
 
 % list the directories
-flist = dir(fullfile(wd, ['*' filesep '*.*']));
+flist = dir(fullfile(wd, ['**' filesep '*.*']));
 
 % get just the directories
 flist = flist([flist.isdir]);  
 
 % ... in a cell array
 flist = unique({flist.folder}');
+
+% scrub out .git and private
+flist = flist(cellfun('isempty',regexp(flist,'.git')));
+flist = flist(cellfun('isempty',regexp(flist,'private')));
 
 % add these to the path
 disp('Modifying MATLAB Path ...')
@@ -30,3 +34,5 @@ addpath(wd,'-end')
 for i = 1:numel(flist)
     addpath(flist{i},'-end')
 end
+
+clear all
