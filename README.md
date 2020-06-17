@@ -120,8 +120,9 @@ HOW TO CITE WITH BIBTEX
 
 VERSION NOTES
 
-1.5 (5 June 2020)
-Updates include a demonstration (run_cs_processing_demo.m) and test data from BML1. This update also includes the likelihood ratio 
-detection method from an in-prep manuscript (suitable for use with MLE direction finding). 
+1.5 (16 June 2020)
+Updates include an install script (install_hfr_cs_proc.m) and demonstration code (run_cs_processing_demo.m) that 
+uses test data from BML1. This update also includes the likelihood ratio detection method from an in-prep
+manuscript (suitable for use with MLE direction finding - more about this at a later time). 
 
 
