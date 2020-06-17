@@ -18,7 +18,8 @@ finding methods.
   MUSIC error from Stoica and Nehorai (1989) used in Emery and Washburn (2018).
 - Uses my version of CODAR's method for single vs dual determination. This 
   part is a work in progress for other arrays. 
-
+- Will work with data from LERA and WERA (in theory). It has been used to 
+  process LERA data - contact me if you're interested.
 
 
 HOW TO USE IT
@@ -31,11 +32,8 @@ HOW TO USE IT
 
 
 TO DO
-- Include installation instructions?
 - Could build some edge case tests using simiulations (eg 0-360 
   transition, etc)
-- Arbitrary arrays need a detection method (that is, single bearing vs dual
-  vs ... etc).
 - This commit includes many more mfiles than are actually needed due to MATLAB's 
   dependency tool - need a better way to isolate tools. 
 
