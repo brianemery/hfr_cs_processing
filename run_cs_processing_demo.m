@@ -21,8 +21,10 @@ function run_cs_processing_demo
 
 site = 'BML1';  % same as site file name in radial file
 
+
 % Main Data Folder (Has CS, RDL subdirs and APMs in it)
-wd = '/Users/codar/Downloads/BML1';
+% get the directory locating this file
+wd = [fileparts( mfilename('fullpath') ) '/data/' site];
 
 % apm file to use
 apm_file = [wd '/APM/MeasPattern_BML1.txt'];
@@ -245,12 +247,15 @@ plot(S.L.RangeBearHead(iz,2),S.L.RadComp(iz),'^')
 xlabel('Bearing')
 ylabel('Radial Velocity')
 
+legend('SeaSonde Std Proc','HFR CS Proc - MUSIC', ...
+       'HFR CS Proc - MUSIC Uncert','HFR CS Proc - MLE')
+
 
 % look at some spectra
 
  flist = get_file_list([wd '/CSS/'],'CSS*');
 
-for i = 19:25
+for i = 19 %:25
     CS = cs_read(flist{i}); s= cs_plot_map(CS); %pause   
 end
 

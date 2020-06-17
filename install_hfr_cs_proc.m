@@ -29,10 +29,10 @@ flist = flist(cellfun('isempty',regexp(flist,'private')));
 % add these to the path
 disp('Modifying MATLAB Path ...')
 
-addpath(wd,'-end')
+addpath(wd)
 
 for i = 1:numel(flist)
-    addpath(flist{i},'-end')
+    addpath(flist{i})
 end
 
-clear all
+clear
