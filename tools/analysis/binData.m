@@ -48,6 +48,12 @@ function [avex,avey,N,stdev,stats]=binData(x,y,binWidth,binCenters,wts)
 % plot(SNR,evar)
 % 
 % For confidence intervals, use confidence_intervals.m
+%
+% SEE ALSO
+% bin_like_hfr.m, bin_drifters_like_radials.m, binData.m,
+% bin_data_struct.m, merge_rads_spatially.m, bin_radials.m
+% ... each of which solve a slightly different problem.
+
 
 % Copyright (C) 2009-2010 Brian Emery
 % Nov 2009 - expanded

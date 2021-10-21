@@ -5,7 +5,9 @@ function S = doa_on_range_cell(CS,APM,peakIdx,rdx,K,n,dmth) %,snr)
 % Typically called by doa_on_cs.m and experiment_music_vs_mle_roms.m - that
 % is both by simulation code and by cs_processing code.
 %
-% *** run_param_test.m is disabled ***
+% *** run_param_test.m is disabled *** 
+% (Also needs integration with the music-highest method ... see
+% re_run_detection_and_compare_to_drifters.m
 %
 % Make sure CS have not been converted to dBm
 %
@@ -37,6 +39,8 @@ function S = doa_on_range_cell(CS,APM,peakIdx,rdx,K,n,dmth) %,snr)
 % This function could be greatly simplified by the consistent use of one
 % method to insert data into the DOA struct, eg using
 % create_doa_column_index.m
+%
+% - make music_param an input, setable in run_cs_proc eg
 
 % test?
 if strcmp('--t',CS), test_case, return, end
@@ -45,6 +49,9 @@ if strcmp('--t',CS), test_case, return, end
 if nargin < 7
     dmth = {'ml','mu'}; % default to just two
 end
+
+% set CODAR's MUSIC Paramters 
+mus_param = [40 20 2];
 
 
 % get array matrix for music error (SeaSondes)
@@ -99,17 +106,15 @@ for f = 1:length(peakIdx)
     % save this for investigations ...
     S.OtherMatrixVars.cov{f,1} = C;
     
+    
     % seasonde music params
     if size(C,1) == 3
-        [S.Params(f,:),S.Dual(f)] = run_param_test(D,V,A,idx.mu{2},[40 20 2]);
+        [S.Params(f,:),S.Dual(f)] = run_param_test(D,V,A,idx.mu{2},mus_param);
     end
     
     
     % compute likelihood ratios for all DOA methods
     S = calc_and_store_glrt(S,idx,A,C,K,n,f);
-        
-    % *** SIGNAL POWER HERE *** .
-    % S = calc_and_store_power(S,idx,A,C,n,f);
 
     
     % ADD SNR 
@@ -143,7 +148,21 @@ S.RngIdx = rdx*ones(max([length(peakIdx) 1]),1);
 % compute signal power at the end
 S = calc_and_store_power(S,A,n);
 
+% specify which Bragg peak things are from ... true if Approaching waves,
+% which are on the right, in positive Doppler frequencies
+S.Apprch = repmat((peakIdx > length(CS.freqs)/2)',1,size(S.Apprch,2)); 
 
+
+return
+
+% Test code for 'Apprch' boolean
+if any(~S.Apprch), keyboard, end
+
+plot(CS.freqs,10*log10(CS.antenna3Self(:,rdx)))
+hold on
+plot(CS.freqs(peakIdx),10*log10(CS.antenna3Self(peakIdx,rdx)),'o')
+plot(CS.freqs(peakIdx(~S.Apprch(:,1))),10*log10(CS.antenna3Self(peakIdx(~S.Apprch(:,1)),rdx)),'b*')
+plot(CS.freqs(peakIdx(S.Apprch(:,1))),10*log10(CS.antenna3Self(peakIdx(S.Apprch(:,1)),rdx)),'m*')
 
 end
 
@@ -348,6 +367,8 @@ function S = calc_and_store_power(S,A,max_n) % idx,A,R,n,f)
 % useful outside of this main function. Maybe this is a better way to do
 % this kind of thing? rather than in the loop?
 
+% see also signal_power_for_doa_struct.m which can replace this?
+
 % get indexing to map the number of emitters to the column index
 col = doa_column_index(max_n);
 
@@ -365,15 +386,17 @@ for n = 1:max_n                % number of emitters
             
             if ~isempty(ix)
                 
-                % compute the power - this outputs an nxn matrix
+                % compute the power - this outputs --an nxn matrix-- just
+                % the powers .. for now? 
                 Pwr = signal_power( A(:,ix) , S.OtherMatrixVars.cov{r} );
                 
                 % get diagonal of the power matrix and put it in place
                 %  Note that music might output less than n emiters so
                 % we need to account for that possibility
                 pwr = NaN(1,n);
-
-                p = real(diag(Pwr));
+                %
+                % p = real(diag(Pwr));
+                p = real(Pwr);
                 
                 pwr(1:length(p)) = p;
                                 

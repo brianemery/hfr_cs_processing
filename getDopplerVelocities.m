@@ -85,16 +85,21 @@ end
 
 % Compute center tx freq (checks out with SpectraPlotterMap)
 % see also File_CrossSpectra.pdf. Units: MHz
-if p.sweepUp
+% ... down sweep has a negative bandwith
+% if p.sweepUp 
     txfreq = (p.freqMHz + ((p.SwBWkHz/1000)*.5));
-else 
-    txfreq = (p.freqMHz - ((p.SwBWkHz/1000)*.5));
-end
+% else 
+%    txfreq = (p.freqMHz - ((p.SwBWkHz/1000)*.5));
+% end
 
 
 
 % This is the DopplerResolutionHzPerBin, also from Header.txt:
 % 0.00390625                   ! 9 ALTERNATE Doppler Resolution in Hz
+% NOTE this equation is not stated in Lipa and Barrick 1983, but it is
+% implied by the data they give (see pgs 237, 238):
+% 0.00745 ~= (1/.26)*(1/512) <-- 512 is not stated
+% Teague 1997 Oceanography does have df = 1/T (T = coherent integration time)
 df = p.SwRfreqHz/p.fftLength;
 
 

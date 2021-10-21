@@ -2,7 +2,7 @@ function peakIdx = convert_fol_ix(FOregi)
 % CONVERT FOL IX - convert output of ImageFOLs to cell based format
 %
 % INTPUT
-% FORegi -- The range/Doppler velocity indices of all points marked as
+% FOregi -- The range/Doppler velocity indices of all points marked as
 %           First Order (FO) in a cross spectra data matrix (sized 
 %           number of range cells by FFT length). 
 %

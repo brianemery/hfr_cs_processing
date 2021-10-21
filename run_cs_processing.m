@@ -17,8 +17,11 @@ function run_cs_processing %(site)
 % 
 %
 % DEFAULT BEHAVIOR
-% - Outputs radials every 10 min
+% - Outputs radials every 10 min 
 % - Uses the list of CS files to set processing times
+% - TimeStamp is derived from the CS file names (which is the window start
+%   time ... I think ... but radials are time centered so need to check on
+%   this ...
 
 % Copyright (C) 2017-2020 Brian Emery
 %

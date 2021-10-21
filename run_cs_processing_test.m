@@ -77,15 +77,20 @@ cut = 30;
 APM = load_pattern_file(apm_file);
 
 
-% list cs files (csq or css)
-flist = get_file_list(csd,'CS*');
+% % list cs files (csq or css)
+% flist = get_file_list(csd,'CS*');
+D = dir([csd '/*.cs']);
+flist = strcat(csd,{D.name})';
+
 
 
 % convert file list to their times
 % For CSQ use this:
 % ftimes = sort(fnames_to_times(flist,[cs_type '_' site '_'],'yy_mm_dd_HHMMSS'));
 % For CSS use this:
-ftimes = sort(fnames_to_times(flist,[cs_type '_' site '_'],'yy_mm_dd_HHMM'));
+% ftimes = sort(fnames_to_times(flist,[cs_type '_' site '_'],'yy_mm_dd_HHMM'));
+ftimes = [datenum(2019,02,17,17,0,0):(10/1440):datenum(2019,02,17,21,0,0) datenum(2019,02,18,17,0,0):(10/1440):datenum(2019,02,18,21,0,0)];
+
 
 % Define the times to generate output radial files
 % (this is every 30 min):
@@ -112,7 +117,7 @@ dir_check(rwd)
 
 
 % PROCESSING LOOP
-keyboard
+
 
 for i = 1:numel(rtimes)
     
@@ -207,7 +212,6 @@ for i = 1:numel(rtimes)
         
         L = rmfield(L,{'RngIdx','RunTime','LR','Rm','Idx'});
         L.README = rmfield(L.README,{'Bear','dBear','RunTime','LR','Rm','Idx'});
-        
         
         
         % write the radial struct to a mat file

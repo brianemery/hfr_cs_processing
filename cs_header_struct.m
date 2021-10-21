@@ -4,6 +4,8 @@ function H = cs_header_struct
 % 
 % SEE WRITE CS HEADER.M
 %
+% Note that the file name appears to be the start time of the data in the
+% file. 
 
 %//For dateSec, 695422 == Jan 1, 1904, 4294967296 == 2^32
 %//dateSec = fix((daysAD - 695422)*(24*60*60));	%// int32

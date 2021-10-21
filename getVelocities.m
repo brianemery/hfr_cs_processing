@@ -83,11 +83,12 @@ c = 299792458;
 
 % Compute center tx freq (checks out with SpectraPlotterMap)
 % see also File_CrossSpectra.pdf. Units: MHz
-if p.sweepUp
+% ... now appears that down sweep has negative bandwitdh
+%if p.sweepUp
     txfreq = (p.freqMHz + ((p.SwBWkHz/1000)*.5));
-else 
-    txfreq = (p.freqMHz - ((p.SwBWkHz/1000)*.5));
-end
+% else 
+%     txfreq = (p.freqMHz - ((p.SwBWkHz/1000)*.5));
+% end
 
 
 

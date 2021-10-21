@@ -151,6 +151,9 @@ if ~isempty(flist)
     % subset the list
     flist = flist(tf);
     
+else
+    disp('Warning: flist is empty ...')
+    
 end
 
 

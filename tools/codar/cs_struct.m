@@ -10,6 +10,9 @@ function CS = cs_struct(N,M)
 % Standard format has the matricies with
 % dimensions nfft x # range cells
 %
+% Note that the file name appears to be the start time of the data in the
+% file in SeaSonde Cross Spectra.
+
 
 [CS.Header] = deal([]);
 
@@ -42,14 +45,14 @@ CS.FileName = '';
 CS.ProcessingSteps = {''};
 CS.Units = 'volts^2';
 
+CS.freqs =[];
+CS.Vrad = [];
+
 if nargin > 0 
    
     CS(1:N) = deal(CS);
     
 end
-
-CS.freqs =[];
-CS.Vrad = [];
 
 
 end

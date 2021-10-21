@@ -47,6 +47,9 @@ R.ProcessingSteps{1,end+1} = 'get_radial_meta';
 
 
 % DISABLE THE BELOW FOR GLRT TESTING ... which applies detection ...
+%
+% Code below is now being done by other things like apply_detection.m and
+% by doa_to_radial_struct.m
 return
 
 % convert to bearing to ccwE

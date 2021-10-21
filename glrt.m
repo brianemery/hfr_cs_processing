@@ -4,9 +4,13 @@ function [LR,gm,Rm,LR2] = glrt(A,R,K)
 %
 % Obtains the likely number of sources. Assumes K > M (snapshots >
 % antennas). See Abramovich and Spencet 2004 for details).   
+%
+% Typically, real(-2*(log(LR))) is taken prior to use in thresholding (see
+% compute_emitters_from_lr.m). 
 % 
 % INPUTS
-% A    - Array matrix at theta(s) given by the DOA solution
+% A    - Array matrix at theta(s) given by the DOA solution 
+%        (# antenna elements x #signals)
 % R    - Data Covariance matrix
 % K    - Number of data snapshots 
 %
@@ -17,8 +21,6 @@ function [LR,gm,Rm,LR2] = glrt(A,R,K)
 % Rm   - Model cov created from the DOA solutions
 % LR2  - LR from Ottersten et al. 1993
 %
-%  ... (ideally) m   - the likely number of sources
-% 
 %
 % REFERENCE
 % Abramovich et al. 2006, Detection-Estimation of Gaussian Sources by
@@ -40,7 +42,8 @@ function [LR,gm,Rm,LR2] = glrt(A,R,K)
 % Estimation and Detection in Array Processing.
 %
 % SEE ALSO
-% wsf_detection.m, glrt_sml.m, glrt_experiment, apply_detection
+% wsf_detection.m, glrt_sml.m, glrt_experiment, apply_detection,
+% glrt_recalculation.m, compute_emitters_from_lr.m 
 
 % Copyright (C) 2018 Brian Emery
 %
@@ -122,7 +125,7 @@ arg =  R/Rm; % R*inv(Rm);
 LR = ( det(arg)/ (trace(arg)/m)^m )^K;  %keyboard
 
 % output real part only - imag part very small
-LR = real(LR);
+LR = real(LR); 
 
 % .. or part of eqn 2.6
 gm = (exp(1)/K)^(m*K) * ( det(arg)^K ) * exp(-trace(arg)) ;
@@ -275,7 +278,7 @@ for i = 1:10
     
     idx = mle_ap(A,R,1);
     
-    [LR(1),~,~,LR2(1)] = glrt(A(:,idx),R,K);
+    [LR(1),~,~,~] = glrt(A(:,ix),R,K);
     
     % compute the chi^2 stat, c.f. https://www.mathworks.com/help/stats/chi2inv.html
     chi2(1) = chi2inv(0.05, dof(M,length(idx)) ); % 95% is arbitrary

@@ -51,7 +51,7 @@ R.Type = '';
 
 % Add these for DOA processing
 [R.RadVel,R.Bear,R.SNR,R.dBear,R.Err, ...
-                        R.Params] = deal(NaN(r,mx));
+                        R.Params,R.Apprch] = deal(NaN(r,mx));
 
 % Snr matrix
 R.SNR = NaN(r,3);
@@ -62,6 +62,9 @@ R.eigValues = NaN(r,m);
 % EigenVectors and Cov matrix as a cell array
 R.OtherMatrixVars.eigVectors{r,1} = [];
 R.OtherMatrixVars.cov{r,1} = [];
+
+% dont need these here
+R.OtherMatrixVars = rmfield(R.OtherMatrixVars,{'ERSC','ERTC','ESPC','MAXV','MINV','SPRC','VFLG'});
 
 % Needed by CS processing
 R.RngIdx = ones(r,1);

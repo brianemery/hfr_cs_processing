@@ -3,6 +3,9 @@ function C = make_cov(CS,fbin,rdx)
 % C = make_cov(CS,fbin,rdx)
 %
 % From doa_on_range_cell.m for example
+% 
+% Expects CS to contain matricies of complex voltages oriented 
+% as length fft x length range cells
 
 % Copyright (C) 2016 Brian Emery
 
@@ -57,7 +60,7 @@ else
     [fn,I,J] = cs_make_field_names(m);
     
     % might as well check on this
-    if ~isequal(fo,fn), disp('CS field name discrepancy'), keyboard, end
+    if ~all(ismember(fn,fo)), disp('CS field name discrepancy'), keyboard, end
     
     
     % preallocate 

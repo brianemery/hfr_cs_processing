@@ -10,6 +10,8 @@ function fn = cs_fieldnames(CS)
 %         'antenna23CrossSp'
 %                           };
 %
+% Should work for non-seasonde CS also. 
+%
 % SEE ALSO
 % ... for generating them use this: cs_make_field_names.m
 

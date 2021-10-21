@@ -44,6 +44,8 @@ function D = apply_detection(S,em,method) %,tf)
 %  and apply_test_result.m which works for the M=3 case (e.g. SeaSonde)
 % 
 % detection_codar_post_proc.m ...
+%
+% NEED TO PUT THE LR, or other detection info in OtherMetadata struct
 
 % TO DO
 % want to be able to vary the LR threshold ... 
@@ -91,7 +93,7 @@ end
 % Apply the boolean to struct field elements 
 
 % apply to top level fields 
-fn = {'RadVel','Err'}; %,'Params'};
+fn = {'RadVel','Err','Apprch'}; %,'Params'};
 
 % note that the application of tf here creats a column vector in D, unless
 % the input is a vector!
@@ -165,6 +167,9 @@ if size(S.RadVel,1) == 1
         
 end
 
+% NOTE ON BELOW
+% I think the solution is the expand the LR fields to the columns in col
+% (same as Bear arrays), and then treat same as those ones
 
 
 % -- STATUS --
@@ -221,7 +226,6 @@ end
 % %     
 % % end
 % 
-
 
 
 % will have to sort these out later ...

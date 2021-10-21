@@ -16,6 +16,7 @@ function [rmsd,bias,N,mae]=rmsdiff(a,b)
 % 
 %     % rmsd ci? ... using matlab's bootstrap 
 %     [ci,bootstat]  = bootci(1000,@rmsdiff,x,y);
+%     [ci,bootstat]  = bootci(1000,{@rmsdiff,x',y'},'Type','norm');
 %     
 %     rmsd_ci(1,i) = ci(2);
 %     rmsd_ci(3,i) = ci(1);

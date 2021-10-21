@@ -2,15 +2,15 @@ function [DOA,idx,D,V] = music(A,C,th,n,mpp)
 % MUSIC - Direction of Arrival from Multiple Signal Classification
 %  [DOA,idx,D,V] = music(A,C,th,n)
 %
-% . ** NEW A and th should be sorted **
 %
 % INPUTS
 % A    - Array Manifold (aka array matrix at all theta (complex))
 %        where A is Mxd, if radar has M elements and theta has d bearings,
-% C    - Covariance matrix
+% C    - Covariance matrix (units are NOT dbm)
 % th   - bearings associated with A 
 % n    - max number of signal sources (defaults to M-1)
-%
+% mpp  - peak picking threshold 'MinPeakProminence' in dB space (0.5 to 1.3) 
+%        ** A and th ** MUST ** be sorted when using this option
 % 
 %
 % OUTPUTS
@@ -34,15 +34,8 @@ function [DOA,idx,D,V] = music(A,C,th,n,mpp)
 % more compatibility/swappability with mle.m, mle_ap.m, etc
 %
 % ** ULA AND RA8 ** 
-% Need to look at peakfinder for ULA's which tend to get anomolous points
-% near the end of the pattern. Otherwise might need to adjust settings for
-% closely spaced sources, see look_for_music_breakdown_check_peakfinder.m
-%
-% Write an easier to understand peakfinding algorithm. The one here is good
-% because it can handle noise, which might be a characteristic of the DOA,
-% but it seems that it could be far simple. Needs a test with ULA, RA8 and
-% closely spaced sources. See: https://stackoverflow.com/questions/22583391/peak-signal-detection-in-realtime-timeseries-data
-% ... or just use peakfinder which might be good?
+% see look_for_music_breakdown_check_peakfinder.m
+
 
 % Check for test case
 if strcmp('--t',A), test_case, end
@@ -182,7 +175,7 @@ end
 
 function idx = use_findpeaks(DOA,n,mpp)
 % USE FINDPEAKS
-% requires signal processing toolbox .. and testing too 
+% requires signal processing toolbox ..  
 %
 %    [...] = findpeaks(...,'NPeaks',NP) specifies the maximum number of peaks
 %     to be found. NP is an integer greater than zero. If not specified, all

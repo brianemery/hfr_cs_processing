@@ -2,7 +2,8 @@ function S = signal_power(A,R) %I,po)
 % SIGNAL POWER - from glrt.m ... 
 %
 % INPUTS
-% A    - Array matrix at theta(s) given by the DOA solution
+% A    - Array matrix at theta(s) given by the DOA solution,
+%        # elements x # signals.
 % R    - Data Covariance matrix
 %
 % OUTPUTS
@@ -70,6 +71,9 @@ po = 1./(m) * Vdml;
 Adag = pinv(A);
 
 S = Adag * (R - po*I) * Adag';
+
+% output just the powers, not the whole matrix?
+S = diag(S);
 
 % keyboard
 % 
@@ -171,9 +175,13 @@ ixmu = ixmu{2};
 S = signal_power(A(:,ix),R); % ixmu, ixml
 
 
+% % recover the snr in db?
+% 10*log10(S(1,1)/sig2)
+% 10*log10(S(2,2)/sig2)
+
 % recover the snr in db?
-10*log10(S(1,1)/sig2)
-10*log10(S(2,2)/sig2)
+10*log10(S(1)/sig2)
+10*log10(S(2)/sig2)
 
 
 

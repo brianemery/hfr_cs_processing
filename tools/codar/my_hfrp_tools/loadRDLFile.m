@@ -76,7 +76,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Now deal with case of a single filename
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-disp( [ 'Processing filename: ' filename ] );
+%disp( [ 'Processing filename: ' filename ] );
 
 RADIAL = RADIALstruct;
 RADIAL.FileName = {filename};

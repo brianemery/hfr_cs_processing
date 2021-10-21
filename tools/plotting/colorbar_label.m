@@ -17,10 +17,11 @@ if nargin < 2
     h = findobj('Tag','Colorbar');
 end
 
+if ~isempty(h)
  % old way
  % set(get(y,'Ylabel'),'String','WindU Variance (cm^2s^-^2)')
- h.Label.String = str;
+ h(1).Label.String = str;
  
-
+end
  
 end

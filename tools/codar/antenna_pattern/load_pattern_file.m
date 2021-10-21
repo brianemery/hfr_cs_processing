@@ -17,6 +17,12 @@ function APM = load_pattern_file(file)
 % check that fields are columns for all types
 % 
 % I dont think this works with IdealPattern files?
+%
+% SORT THE APM IN BEAERING
+% [th,ix] = sort(APM.BEAR);
+% w
+% APM
+% APM = subsref_struct(APM,ix,size(APM.BEAR,1),1)
 
 % check for test case
 if strcmp('--t',file), test_case, return, end

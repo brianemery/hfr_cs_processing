@@ -11,3 +11,11 @@ cwN=450-ccwE;
 i=find(cwN>=360);
 cwN(i)=cwN(i)-360;
 
+
+% NOTE from wavemeas.pdf
+% in radians:
+% cwn = 3pi/2 - ccwE
+
+
+end
+

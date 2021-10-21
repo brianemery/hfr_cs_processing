@@ -1,24 +1,30 @@
 function CSL = cs_load(flist,ftimes,rtime,tau,CSL)
-% CS LOAD - load CS data for radial processing
+% CS LOAD - load CS data into a buffer for DOA processing
 % 
 % CSL = cs_load(flist,ftimes,rtime,tau,CS,CSL)
 %
 % Called by run_cs_processing.m, this manages the rolling collection of CS
-% data to average togther, for example to make CSS from CSQ. It outputs
-% the multi-element struct of individual CS observations.
+% data to be averaged togther, for example to make CSS from CSQ. It outputs
+% the multi-element struct of individual CS observations prior to the
+% averaging which is done by cs_average.m
 % 
 % INPUTS
 % flist  - full list of CS files to load and or average
 % ftimes - times of files in flist
 % rtime  - time of radial file output associated with the +/- tau CS files
-% tau    - averaging period in minuts
+% tau    - averaging period in minutes (NOTE: average NOT computed here)
 % CSL    - struct of everything in the average
 % 
 % Set tau = 0 for no averaging - just load one (TO DO)
 %
+% EXAMPLE
+%
 %
 % REFERENCE
 % http://www.analog.com/media/en/technical-documentation/dsp-book/dsp_book_Ch15.pdf
+%
+% SEE ALSO
+% rng_buffer_load.m
 
 % Copyright(C) 2017 Brian Emery
 
@@ -57,40 +63,6 @@ CSL = CSL( ~ismember([inlist; addlist],rmlist) );
 
 
 
-return
-
-% OLDER VERSION
-
-% Ok ... why not just keep the rolling struct (CSL) and recompute the
-% average each time? should be fast enough ... 
-
-
-
-
-% get the substruct to remove
-CSrm = CSL( ismember(inlist,rmlist) );
-    
-% load the new data to add
-if isempty(addlist)
-    CSn = struct([]);
-else
-    CSn = cs_struct(numel(addlist));
-    for i = 1:numel(addlist)
-        CSn(i) = ReadCS(addlist{i});
-    end
-end
-
-% compute the new moving average
-CS = cs_mv_average(CS,CSn,CSrm);
-
-% get rid of the old 
-CSL = CSL( ~ismember(inlist,rmlist) );
-
-% add the new
-if ~isempty(CSn)
-    CSL(end+1:end+numel(CSn)) = CSn;
-end
-
 % % Check plotting
 % figure(1), hold on, plot(1:512,10*log10(CS.antenna3Self(:,10)),'-')
 %     
@@ -116,6 +88,11 @@ if strcmp('.cs',ext)
 elseif strcmp('.mat',ext) 
     
     CS = load(fname,'CS'); CS = CS.CS; %jfc
+    
+% elseif strcmp('.rs',ext)
+%     
+%     CS = rng_read(fname);
+    
 end
 
 

@@ -79,7 +79,7 @@ end
 
 
 % CONDITIONAL PARFOR
-[~,r] = system('hostname');
+[~,r] = system('hostname'); % r = 'parfor disabled'
 
 if strncmp(r,'ekman',5) %|| strncmp(r,'yourcomputer',12)
     

@@ -30,7 +30,7 @@ function [AV,K] = cs_average(CS)
 if strcmp('--t',CS), test_case, return, end
 
 
-% get field names
+% get data field names
 fn = cs_fieldnames(CS);
 
 
@@ -42,7 +42,7 @@ for i = 1:numel(CS), sz(i,:) = size(CS(i).(fn{1})); end
 CS = CS(ismember(sz,mode(sz),'rows'));
 
 
-% create output
+% create output with meta data fields from CS(1)
 AV = CS(1);
 
 for i = 1:numel(fn)
@@ -76,9 +76,11 @@ if isfield(CS,'Phases')
     end
 end
 
-
+% Meta data
 AV.ProcessingSteps{end+1} = 'cs_average';
 
+% Do I want to compute this? I don't think so
+AV.Header.averagingTimeMin = NaN;
 
 end
 
