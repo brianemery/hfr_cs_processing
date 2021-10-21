@@ -125,4 +125,5 @@ Updates include an install script (install_hfr_cs_proc.m) and demonstration code
 uses test data from BML1. This update also includes the likelihood ratio detection method from an in-prep
 manuscript (suitable for use with MLE direction finding - more about this at a later time). 
 
-
+2.0 (21 Oct 2021) 
+Updates, improvements and new features related to an in-review paper.
