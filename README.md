@@ -53,25 +53,16 @@ includes data from BML1 provided by William Speiser and John Largier.
 
 REFERENCES
 
-Lipa, B., B. Nyden, D. S. Ullman, and E. Terrill, (2006). SeaSonde radial   
-&nbsp;&nbsp;velocities: Derivation and internal consistency.  
-&nbsp;&nbsp;IEEE Journal of Oceanic Engineering, 31 (4) 850?861.  
+Lipa, B., B. Nyden, D. S. Ullman, and E. Terrill, (2006). SeaSonde radial velocities: Derivation and internal consistency. IEEE Journal of Oceanic Engineering, 31 (4) 850?861.  
 
-Stoica, P., & Nehorai, A. (1989). MUSIC, maximum likelihood, and  
-&nbsp;&nbsp;Cramer-Rao bound. IEEE Transactions on Acoustics, Speech, and Signal     
-&nbsp;&nbsp;Processing, 37(5), 720-741.  
+Stoica, P., & Nehorai, A. (1989). MUSIC, maximum likelihood, and the Cramer-Rao bound. IEEE Transactions on Acoustics, Speech, and Signal Processing, 37(5), 720-741.  
 
-Emery, B. and Washburn, L. (2019). Uncertainty Estimates for SeaSonde HF   
-&nbsp;&nbsp;Radar Ocean Current Observations. Journal of Atmospheric and 
-&nbsp;&nbsp;Oceanic Technology 36.2: 231-247.
+Emery, B. and Washburn, L. (2019). Uncertainty Estimates for SeaSonde HF Radar Ocean Current Observations. Journal of Atmospheric and Oceanic Technology 36.2: 231-247.
 
-Emery, B. (2019). Evaluation of Alternative Direction of Arrival Methods  
-&nbsp;&nbsp;for Oceanographic HF Radars. IEEE Journal of Oceanic Engineering,   
-&nbsp;&nbsp;doi: 10.1109/JOE.2019.2914537.  
+Emery, B. (2019). Evaluation of Alternative Direction of Arrival Methods for Oceanographic HF Radars. IEEE Journal of Oceanic Engineering, doi: 10.1109/JOE.2019.2914537.  
 
 Emery, B. (2021 or 2). Direction Finding and Likelihood Ratio Detection for 
-Oceanographic HF Radars. <i>Submitted</i> Journal of Atmospheric and
-&nbsp;&nbsp;Oceanic Technology.  
+Oceanographic HF Radars. <i>Submitted</i> Journal of Atmospheric and Oceanic Technology.  
 
 ARCHITECTURE GOALS
 
@@ -108,6 +99,8 @@ CODING PRINCIPLES
   
 HOW TO CITE WITH BIBTEX
 (See the Zenodo site to cite specific older versions): 
+
+Emery, B., 2021: HFR CS Processing Toolbox for MATLAB, software release version 2.0, https://doi.org/10.5281/zenodo.5598294. URL: https://doi.org/10.5281/zenodo.5598294, doi:10.4445281/zenodo.5598294.
  
 ```
 @misc{Emery2021code,
