@@ -1,6 +1,6 @@
 ## HFR CS PROCESSING TOOLBOX FOR MATLAB ##
 
-v1.0
+v2.0
 
 [![DOI](https://zenodo.org/badge/84593561.svg)](https://zenodo.org/badge/latestdoi/84593561)
 
@@ -16,9 +16,9 @@ finding methods.
   (https://github.com/akirincich/imageFOLs).
 - Includes several DF methods used in Emery (2018), and an estimate of 
   MUSIC error from Stoica and Nehorai (1989) used in Emery and Washburn (2018).
-- Uses my version of CODAR's method for single vs dual determination. This 
-  part is a work in progress for other arrays. 
-- Will work with data from LERA and WERA (in theory). It has been used to 
+- Uses my version of CODAR's method for single vs dual determination. Can use 
+  the Likelihood Ratio (See Emery et. al 2022 almost in press) for larger arrays. 
+- Will work with data from LERA and WERA. It has been used to 
   process LERA data - contact me if you're interested.
 
 
@@ -28,7 +28,6 @@ HOW TO USE IT
 - run the demo to make sure it works (run_cs_processing_demo.m)
 - edit run_cs_processing.m for more advanced applications 
 - edit doa_on_cs.m (~line 80) to include the use of parfor 
-
 
 
 TO DO
@@ -70,13 +69,15 @@ Emery, B. (2019). Evaluation of Alternative Direction of Arrival Methods
 &nbsp;&nbsp;for Oceanographic HF Radars. IEEE Journal of Oceanic Engineering,   
 &nbsp;&nbsp;doi: 10.1109/JOE.2019.2914537.  
 
+Emery, B. (2021 or 2). Direction Finding and Likelihood Ratio Detection for 
+Oceanographic HF Radarsi. <i>Submitted</i> Journal of Atmospheric and
+&nbsp;&nbsp;Oceanic Technology.  
 
 ARCHITECTURE GOALS
 
-- could follow range processing
+- could follow range processing ... email if interested
 - arbitrary array geometry, fft length, etc
 - arbitrary doa method 
-- future use of things like different detectors, MAP algorithm, ...
 - tests using Anthony's data for validation, but also could build some
   edge case tests using simiulations (eg 0-360 transition, etc)
 
@@ -88,7 +89,8 @@ NOTES
   convention, rows = locations, cols = time
 - Data structures are initialized with appropriately named function 
   (e.g. doa_struct.m) to enable standardization
-
+- End product is presently a structure that I'm calling a DOA structure, which is roughly
+  equivalent to a SeaSonde short-time radial (pre-merge), plus a lot more meta data.
 
 
 CODING PRINCIPLES
@@ -126,4 +128,4 @@ uses test data from BML1. This update also includes the likelihood ratio detecti
 manuscript (suitable for use with MLE direction finding - more about this at a later time). 
 
 2.0 (21 Oct 2021) 
-Updates, improvements and new features related to an in-review paper.
+Updates, improvements and new features related to an in-review paper. 
