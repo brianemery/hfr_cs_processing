@@ -70,7 +70,7 @@ Emery, B. (2019). Evaluation of Alternative Direction of Arrival Methods
 &nbsp;&nbsp;doi: 10.1109/JOE.2019.2914537.  
 
 Emery, B. (2021 or 2). Direction Finding and Likelihood Ratio Detection for 
-Oceanographic HF Radarsi. <i>Submitted</i> Journal of Atmospheric and
+Oceanographic HF Radars. <i>Submitted</i> Journal of Atmospheric and
 &nbsp;&nbsp;Oceanic Technology.  
 
 ARCHITECTURE GOALS
