@@ -97,10 +97,13 @@ CODING PRINCIPLES
   and the general/easily repurposed code
   
   
-HOW TO CITE WITH BIBTEX
+HOW TO CITE
+
 (See the Zenodo site to cite specific older versions): 
 
 Emery, B., 2021: HFR CS Processing Toolbox for MATLAB, software release version 2.0, https://doi.org/10.5281/zenodo.5598294. URL: https://doi.org/10.5281/zenodo.5598294, doi:10.4445281/zenodo.5598294.
+
+Using Bibtex:
  
 ```
 @misc{Emery2021code,
