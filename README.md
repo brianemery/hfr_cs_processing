@@ -2,7 +2,7 @@
 
 v2.0
 
-[![DOI](https://zenodo.org/badge/84593561.svg)](https://zenodo.org/badge/latestdoi/84593561)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5598294.svg)](https://doi.org/10.5281/zenodo.5598294)
 
 Tools for processing oceanographic HF radar cross spectra with direction
 finding methods. 
@@ -107,20 +107,24 @@ CODING PRINCIPLES
   
   
 HOW TO CITE WITH BIBTEX
-  
+(See the Zenodo site to cite specific older versions): 
+ 
 ```
-@misc{Emery2018code,
+@misc{Emery2021code,
   author       = {Brian Emery},
-  title        = {{HFR CS Processing Toolbox for MATLAB}, Software Release Version 1.0, https://doi.org/10.5281/zenodo.1451950},
-  version      = {1.0},
+  title        = {{HFR CS Processing Toolbox for MATLAB}, Software Release Version 2.0, https://doi.org/10.5281/zenodo.5598294},
+  version      = {2.0},
   month        = oct,
-  year         = 2018,
-  doi          = {10.5281/zenodo.1451950},
-  url          = {https://doi.org/10.5281/zenodo.1451950}
+  year         = 2021,
+  doi          = {10.5281/zenodo.5598294},
+  url          = {https://doi.org/10.5281/zenodo.5598294}
 }
 ```
 
 VERSION NOTES
+
+1.0 (18 July 2018)
+Original version can be found here: [![DOI](https://zenodo.org/badge/84593561.svg)](https://zenodo.org/badge/latestdoi/84593561)
 
 1.5 (16 June 2020)
 Updates include an install script (install_hfr_cs_proc.m) and demonstration code (run_cs_processing_demo.m) that 
