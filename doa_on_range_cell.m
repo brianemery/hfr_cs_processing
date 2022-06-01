@@ -1,13 +1,9 @@
-function S = doa_on_range_cell(CS,APM,peakIdx,rdx,K,n,dmth) %,snr)
-% DOA ON RANGE CELL - run DOA methods on one rance cell of CS data
+function S = doa_on_range_cell(CS,APM,peakIdx,rdx,K,CFG) %,n,dmth) %,snr)
+% DOA ON RANGE CELL - run DOA methods on one range cell of CS data
 % S = doa_on_range_cell(CS,APM,peakIdx,rdx,K,n,dmth)
 %
 % Typically called by doa_on_cs.m and experiment_music_vs_mle_roms.m - that
 % is both by simulation code and by cs_processing code.
-%
-% *** run_param_test.m is disabled *** 
-% (Also needs integration with the music-highest method ... see
-% re_run_detection_and_compare_to_drifters.m
 %
 % Make sure CS have not been converted to dBm
 %
@@ -19,9 +15,12 @@ function S = doa_on_range_cell(CS,APM,peakIdx,rdx,K,n,dmth) %,snr)
 %            function)
 % rdx     - range cell index 
 % K       - snapshots for music error
-% n       - Search for up to n emitters
-% dmth    - (Optional) Cell struct of doa methods {'ml','mu','wf','sm','wm'}
-%           defaults to {'ml','mu'}
+% 
+% ... These in CFG struct:
+% n          - Search for up to n emitters
+% dmth       - (Optional) Cell struct of doa methods {'ml','mu','wf','sm','wm'}
+%               defaults to {'ml','mu'}
+% mus_param  - [10 5 8]; % [20 10 3] or [40 20 2];
 %
 % OUTPUTS
 % Struct with radial sub-structs MU and ML based on MUSIC and MLE-AP, and more
@@ -31,39 +30,57 @@ function S = doa_on_range_cell(CS,APM,peakIdx,rdx,K,n,dmth) %,snr)
 % SEE ALSO
 % doa_on_cs.m, radial_from_cs.m, cs_processing.m, run_cs_processing*
 
-% NOTE
-% - check that error storage is correct? 
+% CHANGE LOG
+% 14 Mar 2022 - removing the sort from some of the music related code to
+%               keep the metrics in line with the doa data. 
+%             - Added consistent use of one method to insert data into 
+%               the DOA struct, including using create_doa_column_index.m  
+
 
 % TO DO
-% I wonder if consolidating struct storage would be worth doing ...
-% This function could be greatly simplified by the consistent use of one
-% method to insert data into the DOA struct, eg using
-% create_doa_column_index.m
+% - I wonder if consolidating struct storage would be worth doing ...
+%   This function could be greatly simplified by the 
 %
 % - make music_param an input, setable in run_cs_proc eg
+%
+% - Needs integration with the music-highest method ... see
+%   re_run_detection_and_compare_to_drifters.m
+
 
 % test?
 if strcmp('--t',CS), test_case, return, end
 
 % Enable ability to specify DOA method to use
-if nargin < 7
+if nargin < 6
     dmth = {'ml','mu'}; % default to just two
+    % set CODAR's MUSIC Paramters
+    mus_param = [10 5 8]; % [20 10 3] or [40 20 2];
+else
+    dmth = CFG.dmth;
+    n    = CFG.Nemit;
+    mus_param = CFG.mus_param;
+    
 end
 
-% set CODAR's MUSIC Paramters 
-mus_param = [40 20 2];
 
 
 % get array matrix for music error (SeaSondes)
-A = get_array_matrix(APM);
+A = get_array_matrix(APM); APM.A = A.';
 
 % get data storage structure
 S = doa_struct(max([length(peakIdx) 1]),n,size(A,1),dmth);
 S.Type = [APM.Type ' DOA Struct'];
 
+% document processing ... actually keep these in the file but not every
+% radial struct 
+% S.OtherMetadata(1).CFG = CFG;
+
 mus_err = cell(n,1);
 
+% compute doa column index once for the outer loop
+cdx = doa_column_index(n);
 
+% MAIN LOOP 
 
 % loop over peak indicies
 for f = 1:length(peakIdx) 
@@ -77,45 +94,62 @@ for f = 1:length(peakIdx)
         
     % RUN DF METHODS
     % ... one est for each DOA solution ...
-    [doa,ftime,idx,D,V] = run_doa_calculations(A,C,APM.BEAR,n,dmth); 
+    [doa,ftime,idx,D,V,wdeg,doapk] = run_doa_calculations(A,C,APM.BEAR,n,dmth); 
     
-
-    % Get MUSIC Error Ests
-    for i = 1:n      
-        mus_err{i} = music_error(A,C,APM.BEAR,K,i,idx.mu{i});
-        
-        % pad with NaN if necessary
-        mus_err{i} = store_err(mus_err{i},i);
-        
-    end
      
     
     % STORE OUTPUTS
     % 'ml' and 'mu' get converted to ML and MU here
-    S = update_storage(S,doa,ftime,f,idx);
-    
+    S = update_storage(S,doa,ftime,f,idx);    
     
     % Save True Velocity
     S.RadVel(f,1:size(S.RadVel,2)) = CS.Vrad(fbin);
-    
-    % Save MUSIC things 
-    S.Err(f,:) = [mus_err{:}];   
-    S.eigValues(f,:) = D(:).'; 
-    S.OtherMatrixVars.eigVectors{f,1} = V;
-    
+        
     % save this for investigations ...
     S.OtherMatrixVars.cov{f,1} = C;
     
+
     
-    % seasonde music params
-    if size(C,1) == 3
-        [S.Params(f,:),S.Dual(f)] = run_param_test(D,V,A,idx.mu{2},mus_param);
+    % STORE OUTPUTS FOR SPECIFIC DOA METHODS
+    
+    if ismember('mu',dmth)
+        
+        % Get MUSIC Error Ests
+        for i = 1:n
+            mus_err{i} = music_error(A,C,APM.BEAR,K,i,idx.mu{i});
+            
+            % this replced with nan_pad 
+            % % pad with NaN if necessary
+            % mus_err{i} = store_err(mus_err{i},i);
+            
+        end
+        
+        mus_err = nan_pad(mus_err, cdx );
+        
+         
+        % Save MUSIC data - these should all be the right size now
+        S.Err(f,:)    = mus_err;
+        S.PkPwr(f,:)  = doapk;
+        S.PkWdth(f,:) = wdeg;
+        
+        S.eigValues(f,:) = D(:).';
+        S.OtherMatrixVars.eigVectors{f,1} = V;
+        
+        % seasonde music params - run on the dual bearing solution
+        if size(C,1) == 3
+            [S.Params(f,:),S.Dual(f)] = run_param_test(D,V,A,idx.mu{2},mus_param);
+        end
+        
     end
     
     
-    % compute likelihood ratios for all DOA methods
-    S = calc_and_store_glrt(S,idx,A,C,K,n,f);
-
+    if ismember('ml',dmth)
+            
+        % compute likelihood ratios --for all DOA methods--
+        S = calc_and_store_glrt(S,idx,A,C,K,n,f);
+        
+    end
+    
     
     % ADD SNR 
     % if the data is there
@@ -146,12 +180,20 @@ S.RngIdx = rdx*ones(max([length(peakIdx) 1]),1);
 [S.RangeBearHeadUnits{2:3}] = deal(APM.Units.BEAR);
 
 % compute signal power at the end
-S = calc_and_store_power(S,A,n);
+% ... testing use of external function, test suggests same result
+% S = calc_and_store_power(S,A,n); 
+S = signal_power_for_doa_struct(S,APM);
+
 
 % specify which Bragg peak things are from ... true if Approaching waves,
 % which are on the right, in positive Doppler frequencies
-S.Apprch = repmat((peakIdx > length(CS.freqs)/2)',1,size(S.Apprch,2)); 
-
+% ... friday evening cf ... sometimes empty peakIdx causes issues
+if ~isempty(peakIdx)
+    apprch = (peakIdx > length(CS.freqs)/2);
+    S.Apprch = repmat(apprch(:),1,size(S.RadVel,2));
+else
+    S.Apprch = false(size(S.RadVel));
+end
 
 return
 
@@ -166,7 +208,7 @@ plot(CS.freqs(peakIdx(S.Apprch(:,1))),10*log10(CS.antenna3Self(peakIdx(S.Apprch(
 
 end
 
-function [doa,ftime,idx,D,V] = run_doa_calculations(A,C,th,n,fn)
+function [doa,ftime,idx,D,V,wdeg,doapk] = run_doa_calculations(A,C,th,n,fn)
 % RUN DOA CALCULATIONS - from run_radar_simulation_basic.m
 %
 % INPUTS
@@ -175,9 +217,16 @@ function [doa,ftime,idx,D,V] = run_doa_calculations(A,C,th,n,fn)
 % n - number of signals to look for
 %
 % OUTPUT
-% doa - structure of doa solutions, sorted and all that
+% doa   - structure of doa solutions, not sorted, but as a row vectors
 % ftime - structure of doa method run times for this function call
+% idx   - cell, not in row format since later use requires this
+% D,V   - MUSIC eigenvalues and vectors
+% wdeg  - vector of MUSIC peak widths as a row vector (degrees)
+% doapk - vector of MUSIC DOA peak powers (db)  as a row vector
 
+% UPDATES 
+% 14 Mar 2022
+% outputting from MUSIC, DOA peak power in dB and DOA half power width deg 
 
 % Expand for all possible emitters
 % mx = (m*(m+1))/2;
@@ -194,10 +243,20 @@ for i = 1:numel(fn)
       idx(1).(fn{i}) = {};
     ftime(1).(fn{i}) = [];
     doa(1).(fn{i}) = {}; %NaN(1, (n*(n+1))/2 );
+    [D,V,wdeg,doapk] = deal([]);
 end
 
 
 % COMPUTE DOAs, TRACK TIME
+
+% MUSIC
+if ismember('mu',fn)
+    tic
+    [doafxn,idx.mu,D,V,wdeg] = music(A,C,th,n,0.05);
+    for i = n:-1:1, doapk{i} = 10*log10(real(doafxn(idx.mu{i},i))); end
+    ftime.mu = toc;
+end
+
 
 % MLE = CML = DML
 if ismember('ml',fn)
@@ -206,14 +265,6 @@ if ismember('ml',fn)
         idx(1).ml{i,1} = mle_ap(A,C,i);
     end
     ftime(1).ml = toc;
-end
-
-
-% MUSIC
-if ismember('mu',fn)
-    tic
-    [~,idx.mu,D,V] = music(A,C,th,n);
-    ftime.mu = toc;
 end
 
 
@@ -250,52 +301,63 @@ end
 % OUTPUT NAN PADDED RESULTS
 % loop over fn and cells
 
-for j = 1:numel(fn)
-    for i = 1:n
+% this here to call it once
+col = doa_column_index(n);
 
-        doa.(fn{j}){i,1} = nan_pad_doa(idx.(fn{j}){i},th,i);
+for j = 1:numel(fn)
+
+    % get the directions from the index,  for each emitter
+    for i = 1:n
+        
+        doa.(fn{j}){i,1} = th( idx.(fn{j}){i} );
+        
+        % this replaced by nan_pad (and can be removed in future)
+        % doa.(fn{j}){i,1} = nan_pad_doa(,th,i);
         
     end
-end
-
- 
-% reshape outputs
-for i = 1:numel(fn)   
-    doa.(fn{i}) =  [doa.(fn{i}){:}];    
-end
-
+    
+    % now nan pad
+    doa.(fn{j}) = nan_pad(doa.(fn{j}),col);
 
 end
 
-function doa_mus = nan_pad_doa(idx,th,n)
-% STORE DOA - NaN pad DOA results
-% allows for possible return of 1 brg in 2 brg situation
-%
+% nan pad wdeg and doapk for music also, also output row vectors of the 
+% appropriate number of columns (idx too)
+if ismember('mu',fn)
+    wdeg  = nan_pad(wdeg,col);
+    doapk = nan_pad(doapk,col);
+end
+
 % 
+% % this replaced by nan_pad (below) 
+% % 
+% % % reshape outputs as 1 row and the appropriate number of columns
+% for i = 1:numel(fn)   
+%      doa.(fn{i}) =  [doa.(fn{i}){:}];    
+% end
 
 
-% create storage
-doa_mus = NaN(1,n);
-
-% insert data
-doa_mus(1:length(idx)) = sort(th(idx));
-
-
-    
 end
 
-function err = store_err(idx,n)
-% STORE DOA
-% allows for possible return of 1 brg in 2 brg situation
+function vec = nan_pad(cellin,col)
 
-% create storage
-err = NaN(1,n);
+n = numel(cellin); % number of emitters searched for
 
-% insert data
-err(1:length(idx)) = sort(idx);
+vec = NaN(1,(n*(n+1))/2 ); 
 
-
+for i = 1:n
     
+    if ~isempty(cellin{i})
+
+        % sometimes, the n = 2 data only has 1 thing for example
+        % find those cases with this:
+        % if length(cellin{i}) < i, keyboard, end
+        ix = col{i};       
+        vec( ix(1:length(cellin{i})) )  = cellin{i};
+        
+     end
+end
+
 end
 
 function S = update_storage(S,doa,ftime,f,idx)
@@ -314,7 +376,10 @@ for i = 1:numel(fn)
     
     S.RunTime.(upper(fn{i})) = S.RunTime.(upper(fn{i})) + ftime.(fn{i});
     
-    S.Idx.(upper(fn{i}))(f,:) = idx.(fn{i});
+    % Note (14 Mar 2022)
+    % this indexes the cells and is correct. I want Idx to be cell to 
+    % prevent NaN indecies
+    S.Idx.(upper(fn{i}))(f,:) = idx.(fn{i}); 
     
 end
 
@@ -348,69 +413,6 @@ end
 
 end
 
-function S = calc_and_store_power(S,A,max_n) % idx,A,R,n,f)
-% CALCULATE AND STORE POWER - deal with the DOA substructs
-% S = calc_and_store_power(S,idx,A,C,n);
-%
-% this handles the substructs and getting the output in the right format
-%
-%
-% S 	- Radial DOA structure
-% idx   -
-% A     - Antenna Array matrix (see array_matrix.m)
-% R     - 
-% max_n - Search for up to max_n emitters  
-% f     -
-%
-% NOTE
-% this function is designed to run on the whole struct, thus making it
-% useful outside of this main function. Maybe this is a better way to do
-% this kind of thing? rather than in the loop?
-
-% see also signal_power_for_doa_struct.m which can replace this?
-
-% get indexing to map the number of emitters to the column index
-col = doa_column_index(max_n);
-
-% get the doa method substruct field names
-fn = fieldnames(S.Bear);
-
-for n = 1:max_n                % number of emitters
-    
-    for r = 1:size(S.RadVel,1) % row index
-        
-        for i = 1:numel(fn)    % sub struct index
-            
-            % get the APM index of the DOA solutions
-            ix = S.Idx.(fn{i}){r,n};
-            
-            if ~isempty(ix)
-                
-                % compute the power - this outputs --an nxn matrix-- just
-                % the powers .. for now? 
-                Pwr = signal_power( A(:,ix) , S.OtherMatrixVars.cov{r} );
-                
-                % get diagonal of the power matrix and put it in place
-                %  Note that music might output less than n emiters so
-                % we need to account for that possibility
-                pwr = NaN(1,n);
-                %
-                % p = real(diag(Pwr));
-                p = real(Pwr);
-                
-                pwr(1:length(p)) = p;
-                                
-                S.Pwr.(fn{i})(r,col{n}) = pwr;
-                
-            end
-            
-        end
-    end
-end
-
-
-end
-
 function test_case
 % DEV TEST
 %
@@ -419,7 +421,11 @@ function test_case
 tic
 load /m_files/test_data/doa_on_range_cell.mat
 
-S = doa_on_range_cell(CS,APM,peakIdx,rdx,K,n);
+CFG.dmth = {'mu'}; 
+CFG.mus_param = [10 5 8]; % [20 10 3] or [40 20 2];
+CFG.Nemit = n;
+
+S = doa_on_range_cell(CS,APM,peakIdx,rdx,K,CFG);
 
 toc
 keyboard
@@ -428,3 +434,40 @@ keyboard
 
 end
 
+
+
+
+% DEPRECATED - DELETE LATER
+% % this replaced by nan_pad (below) 
+function err = store_err(idx,n)
+% STORE DOA
+% allows for possible return of 1 brg in 2 brg situation
+
+% create storage
+err = NaN(1,n);
+
+% insert data
+err(1:length(idx)) = idx; % sort(idx);
+
+
+    
+end
+
+% this replaced by nan_pad (below) 
+function doa_mus = nan_pad_doa(idx,th,n)
+% STORE DOA - NaN pad DOA results
+% allows for possible return of 1 brg in 2 brg situation
+%
+% 
+
+
+% create storage
+doa_mus = NaN(1,n);
+
+% insert data ... used to be a sort here but I think the music solutions
+% will get decoupled from the metrics if I do that
+doa_mus(1:length(idx)) = th(idx); % sort(th(idx));
+
+
+    
+end

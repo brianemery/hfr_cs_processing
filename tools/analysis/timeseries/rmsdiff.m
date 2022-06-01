@@ -32,7 +32,11 @@ ad=a'; bd=b';
 c=ad+bd; 
 i=isnan(c); 
 ad(i)=0; bd(i)=0;
-abar=(sum(ad,1)./sum(~i,1))'; bbar=(sum(bd,1)./sum(~i,1))';
+
+
+abar=(sum(ad,1)./sum(~i,1))'; 
+
+bbar=(sum(bd,1)./sum(~i,1))';
 
 % compute N
 N=sum(~i,1);

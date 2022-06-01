@@ -5,9 +5,12 @@ function [avex,avey,N,stdev,stats]=binData(x,y,binWidth,binCenters,wts)
 % Produces the average of x in each bin defined by y +/- YbinWidth/2. Thus,
 % YbinWidth has same units as y. 
 %
+% Originally designed to bin over columns, ie y is a time variable, and
+% columns of x are different times. 
+%
 % INPUTS:
 % - x can be a matrix as long as the number of columns is equal to the 
-%   length of y.
+%   length of y. (need to clarify this)
 % - binWidth input must be scalar, or if specifying bin centers, must be
 %   the same size as the binCenters vector. The binWidth and binCenters 
 %   vectors can specify any bin width and center locations.
@@ -38,21 +41,15 @@ function [avex,avey,N,stdev,stats]=binData(x,y,binWidth,binCenters,wts)
 % bc = mean([bc(3:2:end); bc(1:2:end-2)]);
 % [ASD_bin,VAR_bin,N,stdev]=binData(ASD(:),VAR(:),bw,bc);
 %
-% % EXAMPLE 3:
-% 
-% % Plot vs SNR - Err calc looks ok ...
-% SNR = 5:50;
-% 
-% [evar,asnr,N,stdev,stats] = binData(Tmu.Err(:), Tmu.SNR(:), 2, SNR);
-% 
-% plot(SNR,evar)
 % 
 % For confidence intervals, use confidence_intervals.m
 %
 % SEE ALSO
 % bin_like_hfr.m, bin_drifters_like_radials.m, binData.m,
 % bin_data_struct.m, merge_rads_spatially.m, bin_radials.m
-% ... each of which solve a slightly different problem.
+%
+% FOR NOTES ABOUT RADIAL BINNING
+% see /m_files/tools/codar/Contents.m 
 
 
 % Copyright (C) 2009-2010 Brian Emery
@@ -60,8 +57,10 @@ function [avex,avey,N,stdev,stats]=binData(x,y,binWidth,binCenters,wts)
 % Jul 2012 - added weights option, minor clean up
 
 % TO DO
-% build a test case that checks the bin centers/widths works properly
-% (compare withe mv ave or something?)
+% - build a test case that checks the bin centers/widths works properly
+%   (compare withe mv ave or something?)
+% - see bin_apm_struct.m on a better way to organize the meta data struct
+%   and unpack the stats substruct.
 
 
 % --------------------------------------------------------- 
@@ -256,7 +255,7 @@ bw = 90*ones(size(bc));
 
 % compute means using weight code, with all ones as weights
 % this checks execution
-[avex,avey,N,stdev,stats]=binData(x,t,bw,bc,ones(size(x)));
+[avex,avey,N,stdev,stats]=binData(x,t,bw,bc,ones(1,size(x,2)));
 
 plot(avey,avex(1,:),'-bo')
 plot(avey,avex(2,:),'-go')

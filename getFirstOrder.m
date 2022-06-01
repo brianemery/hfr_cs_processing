@@ -1,6 +1,6 @@
-function [peakIdx,Alims,absIdx,abstf] = getFirstOrder(dat,Vrad)
+function [peakIdx,Alims,absIdx,abstf] = getFirstOrder(dat,Vrad,user_param)
 % GET FIRST ORDER.M - Get the indecies of the first order region
-% [peakIdx,Alims,absIdx,nBar]=getFirstOrder(CS,Vrad)
+% [peakIdx,Alims,absIdx,nBar]=getFirstOrder(CS,Vrad,user_param)
 %
 % For an entire Cross Spectra data file. see FirstOrder_Settings.pdf,
 % or SpectraPlotter Map
@@ -8,6 +8,9 @@ function [peakIdx,Alims,absIdx,abstf] = getFirstOrder(dat,Vrad)
 % INPUTS
 % CS    Cross Spectra Struct from cs_read.m or ReadCS.m
 % Vrad  Ocean current velocities from getVelocities.m 
+% user_param These are [Flim Fdown NoiseFac Nsmooth Currmax] (see FirstOrder_Settings.pdf)
+
+
 % 
 % OUTPUTS
 % peakIdx - cell array numel = # range cells, with row index of peaks
@@ -21,6 +24,8 @@ function [peakIdx,Alims,absIdx,abstf] = getFirstOrder(dat,Vrad)
 % 100 4          !11 Maximum Current Limit, #Pts Smoothing For FirstOrderCalc
 % 15.0 1 100.0   !12 Factor Down Peak limit 1st order Radials ,0 = no 2nd order, Factor down 1rst order Waves
 % 7.5 4.0        !15 Radials:Factor down peak nulls, Noise factor,
+%
+% (lower noise accept data closer to the noise level
 %
 % NOTES:
 % Header => CSPlot translations:
@@ -100,14 +105,30 @@ end
 % USER SETTINGS (eg from header.txt) 
 % --------------------------------------------------------------
 
-% DEFAULT SETTINGS
-header.flim        = 15.0; %15.85;   % these are in Volts^2 (they get converted to dBm) (Default 15.0)
-header.currmax     = 100;    % cm/s
-header.fdown       = 7.5; %5.01; %    % these are in Volts^2
-header.noiseFactor = 4.0; %10.0; %    % " " " " in Volts^2
-% number of points to smooth for finding nulls (looks like what is actually
-% used is this number *2+1! (see SpectraPlotterMap)
-header.nsm = 4; 
+if nargin < 3
+    % DEFAULT SETTINGS
+    % flim defines how far down from the spectra peak to accept
+    header.flim        = 15.0; %15.85;   % these are in Volts^2 (they get converted to dBm) (Default 15.0)
+    header.fdown       = 7.5; %5.01; %    % these are in Volts^2, defines where to start looking for nulls
+    header.noiseFactor = 4.0; %10.0; %    % " " " " in Volts^2, defines how far above noise to accept
+    header.currmax     = 100;    % cm/s
+    
+    % number of points to smooth for finding nulls (looks like what is actually
+    % used is this number *2+1! (see SpectraPlotterMap)
+    header.nsm = 4;
+    
+else
+    
+    header.flim        = user_param(1);
+    header.fdown       = user_param(2);
+    header.noiseFactor = user_param(3);
+    header.currmax     = user_param(5);
+    header.nsm         = user_param(4);
+
+    
+end
+
+
 
 % % CUSTOM FOR PWS ANALYSIS
 % disp([mfilename ':FIRST ORDER SETTINGS NON-STANDARD'])
@@ -142,8 +163,8 @@ A2 = dat.antenna2Self; %10*log10(abs(dat.antenna2Self));
 
 % initialize variables
 bins=size(mss,1);
-Left.Idx=1:(bins/2)-10;
-Right.Idx=(bins/2)+10:bins;
+Left.Idx=1:round(bins/2)-10;
+Right.Idx=round(bins/2)+10:bins;
 aboveNoiseIdx=cell(size(mss,2),1);
 peakIdx=cell(size(mss,2),1);
 Alims(1:size(mss,2),1:4)=NaN;

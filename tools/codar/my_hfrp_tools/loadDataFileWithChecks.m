@@ -40,7 +40,7 @@ function [ d, fn, c ] = loadDataFileWithChecks( fn )
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % BE Version:
-% - add comments
+% - add comments ...then removed the comments ... 
 %
 % COMMENTS/THOUGHTS
 % - Not sure how this would handle cell input, seems like something that one
@@ -57,14 +57,11 @@ switch class(fn)
         % Does the file exist?
         if ~exist(fn,'file')  ||  exist(fn,'dir')
             
-            % BE
-            % Mods to decrease the verbosity of the log files
-            % warning( [ '## ' mfilename ':  File ' fn ' could not be found.' ] );
-            disp(['... ' fn ' not found ...'])
+            % warning( [mfilename ':  File ' fn ' not found.' ] );
             d = [];
             fn = [ 'NOT FOUND: ' fn ];
             c = 100;
-            %keyboard
+ 
         else
             
             try
@@ -72,15 +69,16 @@ switch class(fn)
                 d = load(fn);
                 
             catch
-                warning(lasterr);
+                %warning(lasterr);
                 
-                warning( [ '## ' mfilename ': File ' fn ' could not be loaded ' ] ...
+                warning( [mfilename ': File ' fn ' could not be loaded ' ] ...
                     );
                 
                 fn = [ 'UNLOADABLE: ' fn ];
                 
                 c = 1e3;
                 d = [];
+                
             end
             
         end
@@ -92,7 +90,7 @@ switch class(fn)
         c = 1;
         
     otherwise
-        warning( [ '##' mfilename ':  Unknown data type passed to function.' ] );
+        warning( [mfilename ':  Unknown data type passed to function.' ] );
         d = fn;
         fn = 'BAD TYPE';
         c = 1e10;

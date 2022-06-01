@@ -36,7 +36,7 @@ function D = apply_detection(S,em,method) %,tf)
 %
 %
 % SEE ALSO
-% compute_emitters_from_lr.m, detection_codar_post_proc.m
+% compute_emitters_from_lr.m, detection_codar_post_proc.m, run_param_test.m
 
 % TO DO
 % ... need to compare these and make sure they get the same thing ...
@@ -60,8 +60,8 @@ if strcmp(S,'--t'), test_case, return, end
 % add emitter field to the input struct to propagate it through
 S.Nem = em;
 
-% get output struct to modify
-D = S;
+% get output struct to modify, also eject if no emitters 
+D = S; if isempty(em), return, end
 
 % create a cell array that maps the number of emitters to the columns of
 % the DOA matricies
@@ -93,7 +93,7 @@ end
 % Apply the boolean to struct field elements 
 
 % apply to top level fields 
-fn = {'RadVel','Err','Apprch'}; %,'Params'};
+fn = {'RadVel','Err','Apprch','PkPwr','PkWdth','eigValues'}; %,'Params'};
 
 % note that the application of tf here creats a column vector in D, unless
 % the input is a vector!
@@ -102,7 +102,7 @@ for i = 1:numel(fn)
 end
 
 % struct fields that contain DOA substructs
-fn = {'Bear','RmsBrgErr','BrgDiff','RomsBrg','Pwr'}; 
+fn = {'Bear','RmsBrgErr','BrgDiff','RomsBrg','Pwr','Pwr2','Pwr3'}; 
 fn = fn(ismember(fn,fieldnames(S)));
 
 for i = 1:numel(fn)
@@ -111,7 +111,6 @@ end
 
 % These get the single column treatment
 %
-% Special treatement for SNR
 % This arbitrarily has taken the SNR of element 3 - for the ULA and RA8
 % there might be a better way ... 
 

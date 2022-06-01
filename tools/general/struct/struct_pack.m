@@ -17,7 +17,11 @@ function M = struct_pack(fn,M)
 
 % Copyright (C) 2010 Brian M. Emery
 
-if nargin < 2, M = []; end 
+if nargin < 2, M = []; 
+
+else
+    fn = setdiff(fn,inputname(2));
+end 
 
 for i = 1:numel(fn)
     try

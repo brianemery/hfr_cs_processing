@@ -82,6 +82,9 @@ loc.sri=[-120.1157000 33.8918000];
 
 loc.trl = [-120.2322   34.4711];
 
+% Hollister Ranch Gate
+loc.hol = [-120-(14.941/60) 34+(28.134/60)];  
+
 % Enable 4 letter site codes too ...
 fn = fieldnames(loc);
 

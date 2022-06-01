@@ -18,6 +18,15 @@ function LonLat = rangeBear2LonLat(RangeBear,SiteOrigin)
 % check for test case
 if strcmp('--t',RangeBear), test_case, return, end
 
+% NOTE 
+% Regarding empty radial data cases for the RNG/CS processing. It looks 
+% like m_fdist.m will output all empty, if given all emtpy. But the use of
+% the site lonlat here will cause an error. So, put in this trival check
+if isempty(RangeBear)
+    LonLat = RangeBear; return
+end
+
+
 %  Note that m_fdist calls for azimuth input, azimuth is compass bearing,
 % eg degrees cwN, meters! too
 [LonLat(:,1),LonLat(:,2),~] = m_fdist(SiteOrigin(1),SiteOrigin(2),ccwE2cwN(RangeBear(:,2)),RangeBear(:,1)*1000);

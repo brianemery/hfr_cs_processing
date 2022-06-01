@@ -162,12 +162,12 @@ end
 
 %remove center frequencies... in case there is significant energy here and
 %also provides a inner boundary for the MCWS calculation
-ci=m/2-N:m/2+N;  %indices +/-N from the center freq.
+ci=round(m/2-N):round(m/2+N);  %indices +/-N from the center freq.
 gain3(:,ci)=nan;
 
 %%%
 %set up left and right hand side indices
-li=1:m/2;  ri=m/2:m;
+li=1:round(m/2);  ri=round(m/2):m;
 
 %get max, mean, and mean background for each range cell for each half
 lmm=[nanmax(gain3(:,li)')'  nanmean(gain3(:,li)')' nanmean(gain3(:,li(1:N))')'];
@@ -180,7 +180,7 @@ if (f_l/2)==round(f_l/2); %N is even, make odd
 end
 filt_shape=(ones(f_l,1)./f_l);   %create filter shape using square filter
 %%%  filter for each side separately
-for ii=1:2;
+for ii = 1:2
     if ii==1; g=lmm;    elseif ii==2; g=rmm;    end
     %make the filter form correct by padding ends with 1,end index pre conv.
     gg=[ones(floor(f_l/2),1)*g(1,:); g; ones(floor(f_l/2),1)*g(end,:)];

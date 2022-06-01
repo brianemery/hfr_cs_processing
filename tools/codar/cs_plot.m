@@ -88,7 +88,7 @@ for i = 1:3
     
     H(i) = plot_spectra(hx(i),freqs(ix),CS.(fn{i})(ix,rcellIdx),LS(i),fnlab{i});
     
-    add_bragg_lines(CS,hx(i))
+    cs_plot_bragg_lines(CS,hx(i))
 
 end
 
@@ -255,35 +255,6 @@ set(hp,'EdgeColor',[.7 .7 .7],'FaceAlpha',0.2)
 %     ['Ship Range: ' num2str(min(shipRng),3) ' to ' num2str(max(shipRng),3) 'km'])
 
 end
-
-function add_bragg_lines(CS,h)
-% CS PLOT BRAGG LINES
-% 
-% see bragg_frequency_notes.m
-
-
-% constants
-g = 9.81; %m/s^2
-c = 299792458;% m / s
-
-% ftx=13.49e6; % transmit freq in hz (1/s)
-ftx = CS.Header.freqMHz *1e6; % transmit freq in hz (1/s)
-
-ktx = 2*pi*ftx/c; % transmitter wave number
-
-% Using the doppler relation for reflected light:
-df = (1/(2*pi))*sqrt(2*g*ktx);
-
-a = axis(h);
-
-plot(h,[df -df; df -df],[a(3:4)' a(3:4)'],'-m')
-
-
-
-
-
-end
-
 
 function test_case
 

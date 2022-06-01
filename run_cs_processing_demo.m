@@ -21,10 +21,8 @@ function run_cs_processing_demo
 
 site = 'BML1';  % same as site file name in radial file
 
-
 % Main Data Folder (Has CS, RDL subdirs and APMs in it)
-% get the directory locating this file
-wd = [fileparts( mfilename('fullpath') ) '/data/' site];
+wd = '/Users/codar/Downloads/BML1';
 
 % apm file to use
 apm_file = [wd '/APM/MeasPattern_BML1.txt'];
@@ -62,7 +60,6 @@ K = 7;
 % SeaSonde MUSIC parameters are set to [40 20 2] in doa_on_range_cell.m
 % Set LR threshold here (between 10 and 40 for SeaSondes)
 cut = 30;
-
 
 
 
@@ -112,7 +109,7 @@ dir_check(rwd)
 
 
 % PROCESSING LOOP
-keyboard
+
 
 for i = 1:numel(rtimes)
     
@@ -245,18 +242,12 @@ errorbarx(S.U.RangeBearHead(iy,2),S.U.RadComp(iy),S.U.Err(iy))
 iz = find(S.L.RangeBearHead(:,1) > 10 & S.L.RangeBearHead(:,1) < 12);
 plot(S.L.RangeBearHead(iz,2),S.L.RadComp(iz),'^')
 
-xlabel('Bearing')
-ylabel('Radial Velocity')
-
-legend('SeaSonde Std Proc','HFR CS Proc - MUSIC', ...
-       'HFR CS Proc - MUSIC Uncert','HFR CS Proc - MLE')
-
 
 % look at some spectra
 
  flist = get_file_list([wd '/CSS/'],'CSS*');
 
-for i = 19 %:25
+for i = 19:25
     CS = cs_read(flist{i}); s= cs_plot_map(CS); %pause   
 end
 

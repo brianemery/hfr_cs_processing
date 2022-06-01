@@ -28,7 +28,10 @@ function R = doa_struct(r,n,m,fn)
 % dBear formerly used by compute_doa_errors.m, see
 %    clean_up_and_recompute_errors.m, which calls
 %    compute_doa_errors_wrt_roms.m
+% 
 
+% CHANGE LOG
+% 14 Mar 2022 - Idx changed from struct with cells to struct with arrays
 
 if nargin < 2, n = 2; end
 
@@ -51,8 +54,8 @@ R.Type = '';
 
 % Add these for DOA processing
 [R.RadVel,R.Bear,R.SNR,R.dBear,R.Err, ...
-                        R.Params,R.Apprch] = deal(NaN(r,mx));
-
+         R.Params,R.Apprch,R.PkPwr,R.PkWdth] = deal(NaN(r,mx));
+                    
 % Snr matrix
 R.SNR = NaN(r,3);
 
@@ -79,11 +82,12 @@ R(1).README.Bear = '(Struct) Estimated DOA for Method';
 R(1).README.RadVel = 'Radial Velocity';
 R(1).README.Params = 'MUSIC parameters';
 R(1).README.SNR = 'From get_SNR.m';
-R(1).README.dBear = 'DEPRECATED (Struct) Estimated (True) Brg Error (RMS)';
 R(1).README.Err = 'SN89 stddev (deg)';
 R(1).README.RunTime = '(Struct) DOA Method Total Compute Time (s)';
 R(1).README.LR = 'Likelihood Ratio (glrt.M)';
 R(1).README.Pwr = 'Signal Power (signal_power.m)';
+R(1).README.PkPwr  = 'MUSIC DOA Peak Power (dB)';
+R(1).README.PkWdth = 'MUSIC DOA Peak Width (deg)';
 
 R.README.RmsBrgErr = 'RMS bearing error (Struct with fields for DOA algo)';
 R.README.BrgDiff = 'Bearing Difference (ROMS vs DOA method) (Struct with fields for DOA algo)';
@@ -109,7 +113,7 @@ for i = 1:numel(fn)
     S.(fn{i}) = NaN(r,mx);
 end
 
-[R.Bear,R.dBear,R.RmsBrgErr,R.BrgDiff,R.RomsBrg,R.Pwr] = deal(S);
+[R.Bear,R.dBear,R.RmsBrgErr,R.BrgDiff,R.RomsBrg,R.Pwr,R.Pwr2,R.Pwr3] = deal(S);
 
 
 % create runtime count
@@ -133,6 +137,7 @@ for i = 1:numel(fn)
     S.(fn{i}) = cell(r,n);
 end
 
+% Idx has to be cell to prevent getting NaN indexes
 [R.Rm,R.Idx] = deal(S);
 
 

@@ -14,18 +14,18 @@ H.dateTimeSec04 =  (now - 695422)*(24*60*60) - 4294967296;
 
 H.kindOfData =  1;           % 1 is 'raw', 2 is averaged
 H.siteStr =  '';
-H.averagingTimeMin =  4;
-H.freqMHz =  13.4900;
-H.SwRfreqHz =  2;
-H.SwBWkHz =  100.7080;
-H.sweepUp =  0;
-H.nRangeCells =  56;
+H.averagingTimeMin =  [];
+H.freqMHz =  []; %13.4900;
+H.SwRfreqHz =  []; %2;
+H.SwBWkHz =  []; %100.7080;
+H.sweepUp =  []; %0;
+H.nRangeCells =  [];
 H.firstRangeCell =  0;
-H.distToFirstRangeCell =  1.4895;
+H.distToFirstRangeCell = [];% 1.4895;
 H.dTHex =  [];
 H.deleteRawSpectra =  0;
 H.overrideRemHeader =  0;
-H.fftLength = 512;
+H.fftLength = []; %512;
 
 % 
 % %// Collect header data

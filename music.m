@@ -1,4 +1,4 @@
-function [DOA,idx,D,V] = music(A,C,th,n,mpp)
+function [DOA,idx,D,V,wdeg] = music(A,C,th,n,mpp)
 % MUSIC - Direction of Arrival from Multiple Signal Classification
 %  [DOA,idx,D,V] = music(A,C,th,n)
 %
@@ -9,8 +9,10 @@ function [DOA,idx,D,V] = music(A,C,th,n,mpp)
 % C    - Covariance matrix (units are NOT dbm)
 % th   - bearings associated with A 
 % n    - max number of signal sources (defaults to M-1)
-% mpp  - peak picking threshold 'MinPeakProminence' in dB space (0.5 to 1.3) 
-%        ** A and th ** MUST ** be sorted when using this option
+% mpp  - peak picking threshold 'MinPeakProminence' in dB space (0.05 to 1.3) 
+%        ** A and th ** MUST ** be sorted when using this option ... also
+%        the default is to use peakfinder.m and not findpeaks.m which this
+%        option invokes (peakfinder.m used in all my 2019 papers)
 % 
 %
 % OUTPUTS
@@ -26,7 +28,25 @@ function [DOA,idx,D,V] = music(A,C,th,n,mpp)
 % From music_ss.m and others. Use run_parameter_test.m on outputs for 
 % SeaSonde MUSIC parameters. See also music_error.m, music_error2.m
 
+% NOTES ON OUTPUTS
+% 
+% NOTE 1: 
+% this needs to always output 2 indecies? or to propagate single brg
+% solution
+% if length(dualIdx) <= 1,  
+%     dualIdx = [dualIdx NaN(1,2-length(dualIdx))]; 
+% end
+%
+% NOTE 2:
+% outputting NaN index is sort of pointless. Just need later code (eg
+% doa_on_range_cell.m) to be able to have 0, 1 or 2 indecies from this
+% function
+
+
 % Copyright (C) 2017 Brian Emery
+
+% Change Log 
+% 11 Mar 2022 - added additional radial metrics not done elsewhere
 
 
 % TO DO
@@ -85,30 +105,38 @@ end
 
 % PEAK FINDING
 
-if nargin < 5
+if nargin < 5 &&  nargout < 5
     % use peakfinder.m
     % ie if no findpeaks input is given, default to the old way
     idx = use_peakfinder(n,DOA,th);
     
 else
+    % I think default to zero, then use metrics to sort good from bad?
+    if nargin < 5, mpp = 0; end 
+    
     % use findpeaks.m
-    idx = use_findpeaks(DOA,n,mpp);
+    [idx,wdeg] = use_findpeaks(DOA,th,n,mpp);
     
 end
 
 
-% NOTES ON OUTPUTS
-
-% NOTE 2:
-% outputting NaN index is sort of pointless. Just need later code (eg
-% doa_on_range_cell.m) to be able to have 0, 1 or 2 indecies from this
-% function
+% ABANDONED CODE 
+% ... this is really messy and so for now just use findpeaks. If peak width
+% looks to be important then I might revisit this ...
+%
+% % Compute peak width for radial metrics
+% if nargout > 4
+%     wdeg = cell(n,1);
+%     
+%     % get the angular spacing
+%     dth = mode(diff(th));
 % 
-% % NOTE: this needs to always output 2 indecies? or to propagate single brg
-% % solution
-% if length(dualIdx) <= 1,  
-%     dualIdx = [dualIdx NaN(1,2-length(dualIdx))]; 
+%     for j = 1:n
+%         wdeg{j} = half_power_width(10*log10(real(DOA(:,j))),th,idx{j},dth);   
+%     end
 % end
+
+
 
 % previous to peakfinder.m usage:
 % I need a better method for determining the dual bearing indicies. The
@@ -155,7 +183,7 @@ for i = 2:n
          y =      y(~ismember(idx{i},[1 length(th)]));
     idx{i} = idx{i}(~ismember(idx{i},[1 length(th)]));
     
-    % get largest n peaks
+    % get largest n peaks <- disable when using music_highest
     if length(idx{i}) > i
                
         % plot(th,x), hold on
@@ -173,7 +201,7 @@ end
 
 end
 
-function idx = use_findpeaks(DOA,n,mpp)
+function [idx,wdeg] = use_findpeaks(DOA,th,n,mpp)
 % USE FINDPEAKS
 % requires signal processing toolbox ..  
 %
@@ -183,10 +211,6 @@ function idx = use_findpeaks(DOA,n,mpp)
 %     sort direction to 'descend' to return the NP largest peaks. (see
 %     'SortStr')
 % 
-% NOTE
-% that the peak width this outputs could be a useful, radial metric-like,
-% metric
-
 %     [...] = findpeaks(...,'SortStr',DIR) specifies the direction of sorting
 %     of peaks. DIR can take values of 'ascend', 'descend' or 'none'. If not
 %     specified, DIR takes the value of 'none' and the peaks are returned in
@@ -197,7 +221,12 @@ function idx = use_findpeaks(DOA,n,mpp)
 %     peaks are returned. Use this parameter in conjunction with setting the
 %     sort direction to 'descend' to return the NP largest peaks. (see
 %     'SortStr')
-
+%
+%
+% THOUGHTS
+% - might just output everything, not worrying about MinPeakProm and let any
+%   metric type filter deal with bad ones
+% - Prominence might be a more useful indicator of height, not sure
 
 
 for i = n:-1:1
@@ -205,13 +234,68 @@ for i = n:-1:1
     % just output the indicies - ok to assume that the index of DOA and th
     % are matched upt
     
+    % [pks,locs,w,p]
     % [~,idx{i}] = findpeaks(real(DOA(:,i)),'NPeaks',i,'SortStr','descend');
     % [pks,locs,wdth,prmn]= findpeaks(10*log10(real(DOA(:,i))),th,'MinPeakProminence',0.5); %'MinPeakHeight',1)
-    [~,idx{i}]= findpeaks( 10*log10(real(DOA(:,i))), ...
+    % have to do this in non-dB space to get the half width
+    [~,locn,wdeg{i}]= findpeaks( real(DOA(:,i)), th,...
                         'MinPeakProminence',mpp, ... % ); %'MinPeakHeight',1)
                         'SortStr','descend', ...
+                        'WidthReference','halfheight', ...
                         'NPeaks',i);
 
+    % locn is not an index when x axis is defined in findpeaks input
+    [~,idx{i}] = ismember(locn,th);
+
+end
+
+% cool plots
+% [pks,locs,w,p]= findpeaks(real(DOA(:,2)),th,'Annotate','extents','WidthReference','halfheight')
+    
+end
+
+% possibly abandoned ...
+function wdeg = half_power_width(pwr,th,ix,dth)
+% HALF POWER WIDTH
+% Given input power in dB units. 
+%
+% Recall that if dB are input, the half power is
+% 3dB down, which may be different than 1/2 * the power in dB
+%
+% this runs on one DOA function at a time ... 
+% ix de-celled outside the function
+
+
+wdeg = NaN(size(ix));
+
+if length(ix) > 1, keyboard, end
+
+% ix is the peak ... might be up to n of them ...
+for i = 1:numel(ix)    
+    
+    % brute force algorithm 
+    
+    % find index of whole peak plus some (15db)
+    jdx = find(pwr > pwr(ix(i))-15 );
+    
+    % try to avoid issues crossing 360 to 0
+    wdeg(i) = (length(jdx)-1)*dth;
+    
+%     
+%     % now find the end points for the interp
+%     b = find(pwr < 0.5); b = b(1);
+%     
+%     make_plot(plt, th(1:b), pwr(1:b), 's')
+%     
+%     
+%     % do the lookup to get the theta at 0.5
+%     %
+%     %     Vq = interp1(X,V,Xq) interpolates to find Vq, the values of the
+%     %     underlying function V=F(X) at the query points Xq.
+%     
+%     bw = interp1( pwr(b-1:b) , th(b-1:b) , 0.5);
+%     
+    
 end
     
 end
@@ -235,12 +319,14 @@ load /m_files/test_data/music/lera_test.mat
 [th,ix] = sort(th);
 A = A(:,ix);
 
-[DOA,idx,D,V] = music(A,C,th,n,0.2);
+[DOA,idx,D,V,wdeg1] = music(A,C,th,n,0);
 
 for i = 1:numel(idx), plot(th,10*log10(real(DOA(:,i)))); hold on, end
 for i = 1:numel(idx), plot(th(idx{i}),10*log10(real(DOA((idx{i}),i))),'*'), end
 
-[DOA,idx,D,V] = music(A,C,th,n,1);
+keyboard
+
+[DOA,idx,D,V,wdeg2] = music(A,C,th,n,1);
 
 % rerun it with a higher peak threshold
 for i = 1:numel(idx), plot(th,10*log10(real(DOA(:,i)))); hold on, end
@@ -258,7 +344,7 @@ keyboard
 %     plot(locs,pks,'m*')
 % end
 
-keyboard
+
 % ----------------
 
 
@@ -280,7 +366,7 @@ APM = make_ideal_pattern(225, 0:5:360);
 A = get_array_matrix(APM); 
 
 % Run the test
-[DOA,idx] = music(A,C,APM.BEAR,2);
+[DOA,idx,D,V,wdeg] = music(A,C,APM.BEAR,2);
 
 
 
@@ -321,11 +407,11 @@ function plot_doa(APM,DOA,idx,titleStr)
 % % Dual angles might have NaN index
 % idx = idx(~isnan(idx));
 
-plot(APM.BEAR,10*log10(DOA),'-b.')
+plot(APM.BEAR,10*log10(real(DOA)),'-b.')
 
 hold on
 
-plot(APM.BEAR(idx),10*log10(DOA(idx)),'g*')
+plot(APM.BEAR(idx),10*log10(real(DOA(idx))),'g*')
 
 xlabel('bearing (deg CWN)'),ylabel('10*log10(DOA)')
 
@@ -333,7 +419,7 @@ title(titleStr)
 
 % add info to plot
 for i = 1:length(idx)
-text(APM.BEAR(idx(i))+10, 10*log10(DOA(idx(i))), ['(' num2str(APM.BEAR(idx(i))) ',' num2str(10*log10(DOA(idx(i)))) ')'])
+text(APM.BEAR(idx(i))+10, 10*log10(real(DOA(idx(i)))), ['(' num2str(APM.BEAR(idx(i))) ',' num2str(10*log10(real(DOA(idx(i))))) ')'])
 
 end
 

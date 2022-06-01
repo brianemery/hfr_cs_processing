@@ -10,16 +10,16 @@ finding methods.
 - Provides research quality software for processing HFR data following the
   methods of Lipa et al. (2006).
 - Employs a home made ship removal algorithm that follows what is known 
-  about how it's really done. 
+  about how it's really done. (Presently disabled) 
 - Generalizes the cross spectra data structure for arbitrary arrays.
 - Allows the use of the imageFOL toolbox by Anthony Kirincich 
   (https://github.com/akirincich/imageFOLs).
 - Includes several DF methods used in Emery (2018), and an estimate of 
   MUSIC error from Stoica and Nehorai (1989) used in Emery and Washburn (2018).
 - Uses my version of CODAR's method for single vs dual determination. Can use 
-  the Likelihood Ratio (See Emery et. al 2022 almost in press) for larger arrays. 
+  the Likelihood Ratio (See Emery et. al 2022) for larger arrays. 
 - Will work with data from LERA and WERA. It has been used to 
-  process LERA data - contact me if you're interested.
+  process LERA data.
 
 
 HOW TO USE IT
@@ -61,16 +61,13 @@ Emery, B. and Washburn, L. (2019). Uncertainty Estimates for SeaSonde HF Radar O
 
 Emery, B. (2019). Evaluation of Alternative Direction of Arrival Methods for Oceanographic HF Radars. IEEE Journal of Oceanic Engineering, doi: 10.1109/JOE.2019.2914537.  
 
-Emery, B. (2021 or 2). Direction Finding and Likelihood Ratio Detection for 
-Oceanographic HF Radars. <i>Submitted</i> Journal of Atmospheric and Oceanic Technology.  
+Emery, B., Kirincich, A., and Washburn, L. (2022). Direction Finding and Likelihood Ratio Detection for 
+Oceanographic HF Radars. Journal of Atmospheric and Oceanic Technology, 39(2), 223-235. https://journals.ametsoc.org/view/journals/atot/39/2/JTECH-D-21-0110.1.xml  
 
 ARCHITECTURE GOALS
 
-- could follow range processing ... email if interested
 - arbitrary array geometry, fft length, etc
 - arbitrary doa method 
-- tests using Anthony's data for validation, but also could build some
-  edge case tests using simiulations (eg 0-360 transition, etc)
 
 
 NOTES
@@ -128,4 +125,7 @@ uses test data from BML1. This update also includes the likelihood ratio detecti
 manuscript (suitable for use with MLE direction finding - more about this at a later time). 
 
 2.0 (21 Oct 2021) 
-Updates, improvements and new features related to an in-review paper. 
+Updates, improvements and new features related to Emery et al. 2022.
+
+2.1 (1 June 2022)
+Updates including radial metrics, many code fixes and likely bug introductions. 

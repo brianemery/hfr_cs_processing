@@ -163,13 +163,15 @@ else
     keyboard
 end
 
+
+keyboard
+
 return
 
 figure
 subplot(2,1,1), plot(A.BEAR,10*log(DOA(:,1)))
 
 subplot(2,1,2), plot(A.BEAR,10*log(DOA(:,2)),'-r')
-
 
 
 

@@ -73,7 +73,12 @@ for i = 1:numel(fn)
     elseif iscell(M(1).(fn{i}))
         
         % force cells to row concatenate
-        S.(fn{i}) = cat(1,M.(fn{i}));
+        try
+            S.(fn{i}) = cat(1,M.(fn{i}));
+        catch % ... unless they are rows
+            % S.(fn{i}) = [ M.(fn{i}) ]; % ... doesn't work ... maybe use
+            % isrow and then concat vertically as cat does
+        end
         
     elseif isstruct(M(1).(fn{i})) && ~isempty( M(1).(fn{i}) )
                 

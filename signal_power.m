@@ -1,38 +1,42 @@
-function S = signal_power(A,R) %I,po)
+function S = signal_power(A,R,D,mthd) %I,po)
 % SIGNAL POWER - from glrt.m ... 
 %
 % INPUTS
 % A    - Array matrix at theta(s) given by the DOA solution,
 %        # elements x # signals.
 % R    - Data Covariance matrix
+% D    - Vector of eigenvalues
+%
+% TESTING OPTION INPUT mthd
+%  which defines how the noise is estimated
+%  ... 1 is MUSIC (default), lowest eigenvalue
+%  ... 2 is Mean of noise eigenvalues (Abrahamovich et al 2006 book ch)
+%  ... 3 is Ottersten et al 1993 
 %
 % OUTPUTS
-% S(theta) at the DOAs
-% 
-% equations 8 and 9
-% 
-% See OVSN93 equation 4.126, and text therein which suggests using "the
-% corresponding SML estimate (4.37) [for S]
-% 
-% Based on Schmidt 1986 this should generate the signal covariance matrix
+% S - signal powers at the DOAs ( not the matrix of signal powers )
 %
+% NOTES
+% 1. This function determines the number of noise eigenvalues based on the
+%   inputs, when the signal power method calls for it. 
+% 2. The test_case attempts to explain the relation between signal power
+%   and time series variance .. producing the same result for the time
+%   series variance and the signal power
 
-% TO DO 
-% - See also 2004 abramovich which as Ottersten 1993 based 'traditional
-%   method' ... look for test data 
-% - Use alt estimates of noise? 
-% - output diagnal elements only? 
-%
+% Brian Emery ~ 2018
+%  - 12 Jan 2022 adding different methods for estimating noise
+
 
 % % *** 
 % 
-% % From the 2006 book chapter
+% From the 2004 Abrahmovich et al "PERFORMANCE BREAKDOWN OF SUBSPACE-BASED METHODS
+% IN ARBITRARY ANTENNA ARRAYS: GLRT-BASED PREDICTION AND CURE" 
 % 
 % % beta
 % % B = inv(S'*S);
 % 
-% % noise power (mean of noise eigen values)?
-% % po = 1/(M-m) * sum()
+% % noise power (mean of noise eigen values) (eqn 9)
+% % po = 1/(M-m) * sum() % M sensor, n DOA estimates
 % 
 % % P = (B*S') * [ R - po*eye(M)] * (S*B);
 % 
@@ -46,25 +50,53 @@ function S = signal_power(A,R) %I,po)
 % check for test case
 if strcmp('--t',A), test_case;  end
 
+% set default noise estimation method
+if nargin < 4, mthd =1; end
+
 
 % # elements x # signals
-[m,d] = size(A);
+[m,n] = size(A);
 
 % Get identity matrix of correct size
 I = eye(m);
 
+% sort in ascending just in case
+D = sort(D);
 
 
-% Get the orthogonal projector onto the null space of S (4.41 of OVSN93)
-Pp = I - A*pinv(A);
+switch mthd
+    case 1
+        
+        % noise power smallest eigen value (must be > 0 per Schmidt 1986)
+        % does this ever happen? yes, probabl near singular matrix
+        % inspection of one case suggest it's not important and produces
+        % about the same number for signal power
+        po = D(1); %if po < 0, keyboard, po=0;, end 
+        
+    case 2
+         
+        % noise power from mean of noise eigen values
+        po = mean(D(1:(m-n))); %1/(m-n) * sum( D(1:(m-n))
+        
+        
+    case 3
+        
+        % Compute noise power (4.49, note that this differs from 4.38 though which
+        % has (m-d) in denominator
+        %
+        % This is also quite different than using the MUSIC paper method of just
+        % using the smallest eigen value
 
-% (re) compute the Vdml 
-Vdml = trace( Pp*R );
-
-% Compute noise power (4.49, note that this differs from 4.38 though which
-% has (m-d) in denominator
-po = 1./(m) * Vdml;
-
+        
+        % Get the orthogonal projector onto the null space of S (4.41 of OVSN93)
+        Pp = I - A*pinv(A);
+        
+        % (re) compute the Vdml
+        Vdml = trace( Pp*R );
+        
+        po = 1./(m) * Vdml;
+        
+end
 
 % 4.37 ... also similar to eqn 7 in Schmidt 1986 
 
@@ -170,9 +202,10 @@ ixml = mle_ap(A,R,2);
 
 ixmu = ixmu{2};
 
+[V,D] = eig(R);
 
 % These get the correct answer!
-S = signal_power(A(:,ix),R); % ixmu, ixml
+S = signal_power(A(:,ix),R,D); % ixmu, ixml
 
 
 % % recover the snr in db?
@@ -183,6 +216,10 @@ S = signal_power(A(:,ix),R); % ixmu, ixml
 10*log10(S(1)/sig2)
 10*log10(S(2)/sig2)
 
+
+% these work too
+S = signal_power(A(:,ix),R,D,2)
+S = signal_power(A(:,ix),R,D,3)
 
 
 keyboard

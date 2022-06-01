@@ -83,7 +83,7 @@ s2 = structfun(@isstruct,S);
 
 nm = nm(~s1 & ~s2);
 
-% skim any named fields
+% skip any named fields
 nm = setdiff(nm,fn); 
 
 

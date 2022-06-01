@@ -10,6 +10,9 @@ function APM = load_pattern_file(file)
 
 % Copyright (C) 2009-2010 Brian M. Emery
 % June 2009
+%
+% CHANGE LOG
+% 20220322 - added code to sort APM in Bearing
 
 % TO DO
 % get some units into the mix, add other file support
@@ -18,11 +21,6 @@ function APM = load_pattern_file(file)
 % 
 % I dont think this works with IdealPattern files?
 %
-% SORT THE APM IN BEAERING
-% [th,ix] = sort(APM.BEAR);
-% w
-% APM
-% APM = subsref_struct(APM,ix,size(APM.BEAR,1),1)
 
 % check for test case
 if strcmp('--t',file), test_case, return, end
@@ -58,6 +56,15 @@ else
 end
 
 eval(['APM.FileName=''' file ''';'])
+
+
+% OK MUSIC Peak Picking sometimes REQUIRES SORTED BEARINGS 
+[~,ix] = sort(APM.BEAR); 
+
+APM = subsref_struct(APM,ix,size(APM.BEAR,1),1);
+
+
+
 
 end
 

@@ -1,8 +1,9 @@
-function S = doa_on_cs(CS,APM,peakIdx,K,n,dmth) 
+function S = doa_on_cs(CS,APM,peakIdx,K,CFG) %,n,dmth) 
 % DOA ON CS - run DOA processing on CS data 
-% S = doa_on_cs(CS,APM,peakIdx,K,n)
+% S = doa_on_cs(CS,APM,peakIdx,K,CFG)
 %
 % A more general version of radial_from_cs.m, called by run_cs_processing.m
+% and run_rng_processing.m 
 %
 % Make sure CS have not been converted to dBm
 %
@@ -11,6 +12,8 @@ function S = doa_on_cs(CS,APM,peakIdx,K,n,dmth)
 % ... K snapshots for music error
 % peakIdx - A cell array (with numel = (# range cells)), each containing the
 %           row index points within the First Order peaks.
+% CFG should have:
+% Nemit, dmth, use_parfor,mus_params ...
 %
 % OUTPUTS
 % doa struct
@@ -33,10 +36,7 @@ function S = doa_on_cs(CS,APM,peakIdx,K,n,dmth)
 % solution ... see vr_averaging_investigation.m for evidence, but code here
 % could probably test that there is a 2nd velocity and mark it single
 % otherwise
-%
-% MATLABPOOL ON KNOT?
-% I'm useing R2012 on knot, do I need to invoke matlabpool? should I just
-% use R2017? https://csc.cnsi.ucsb.edu/docs/using-matlab
+
 
 % Check for test
 if strcmp('--t',CS), test_case, return, end
@@ -54,54 +54,46 @@ end
 
 if nargin < 5
     % also set emitters to search for 
-    n = 2;
+    CFG.Nemit = 2;
+    CFG.dmth = {'mu'}; 
+    CFG.use_parfor = false; 
+    CFG.mus_param = [10 5 8];
 end
+        
+n = CFG.Nemit;
 
 
 % make sure units are *NOT* dbm
 if isfield(CS,'Units') && strcmp('dBm',CS.Units)
     CS = cs_dbm2volts(CS);
 end
-
-% if ~iscell(peakIdx)
-
-% Enable ability to specify DOA method to use
-if nargin < 6
-    dmth = {'ml','mu'}; % default to just two
-end
-
     
 % Pre-pre allocate, more or less
-[S(1:numel(peakIdx))] = deal(doa_struct(1,n,n,dmth));
+[S(1:numel(peakIdx))] = deal(doa_struct(1,n,n,CFG.dmth));
 
 
 
 
 
-% CONDITIONAL PARFOR
+% GET THE DOAS WITH CONDITIONAL PARFOR
 [~,r] = system('hostname'); % r = 'parfor disabled'
 
-if strncmp(r,'ekman',5) %|| strncmp(r,'yourcomputer',12)
-    
-    
-    % GET THE DOAS
-    parfor rc = 1:numel(peakIdx) %  %PARFOR over different range cells
+if strncmp(r,'ekman',5) && ~(CFG.use_parfor) %|| strncmp(r,'yourcomputer',12)
+       
+    for rc = 1:numel(peakIdx)  
         
-        S(rc) = doa_on_range_cell(CS,APM,peakIdx{rc},rc,K,n,dmth);
+        S(rc) = doa_on_range_cell(CS,APM,peakIdx{rc},rc,K,CFG); %,n,dmth);
         
     end
     
-else % default to non-parallel for unknown computers
-    
-    
-    % GET THE DOAS
-    for rc = 1:numel(peakIdx) %  peakIdx input as cell
+else % default to parallel for unknown computers
         
-        S(rc) = doa_on_range_cell(CS,APM,peakIdx{rc},rc,K,n,dmth);
+    parfor rc = 1:numel(peakIdx) % %PARFOR over different range cells
         
+        S(rc) = doa_on_range_cell(CS,APM,peakIdx{rc},rc,K,CFG); %n,dmth);
+                
     end
-    
-    
+        
 end
 
 
