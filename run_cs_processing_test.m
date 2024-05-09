@@ -1,5 +1,5 @@
-function run_cs_processing_demo
-% RUN CS PROCESSING DEMO - cross spectra to radials driver script demo
+function run_cs_processing_test
+% RUN CS PROCESSING TEST - windows friendly cross spectra to radials driver script demo
 %
 % Demonstrates a typcical usage of the toolbox and also acts as a test to
 % verify that it works 
