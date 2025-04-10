@@ -103,7 +103,12 @@ CSL = cs_struct(0);
 
 % Gather some meta data to save later
 CFG.README = 'Meta Data for run_cs_processing_demo.m';
-CFG = struct_pack({'apm_file', 'user_param','tau','cs_type','K','cut'},CFG);
+CFG = struct_pack({'apm_file', 'user_param','tau','cs_type','K','cut','Nemit'},CFG);
+
+% set other defaults
+CFG.dmth = {'mu'};
+CFG.use_parfor = false;
+CFG.mus_param = [10 5 8];
 
 
 
@@ -156,7 +161,7 @@ for i = 1:numel(rtimes)
         % make sure peakIdx is a cell array (each range cell a cell}
         % Run DOA processing
         % (music or mle, music metrics, music error, etc)
-        S = doa_on_cs(CS,APM,peakIdx,K,Nemit);
+        S = doa_on_cs(CS,APM,peakIdx,K,CFG);
         
         % fill in some meta data, including Range, file name, etc
         S = get_radial_meta(S,APM,rtimes(i),rkm);
