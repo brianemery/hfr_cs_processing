@@ -106,7 +106,7 @@ CFG.README = 'Meta Data for run_cs_processing_demo.m';
 CFG = struct_pack({'apm_file', 'user_param','tau','cs_type','K','cut','Nemit'},CFG);
 
 % set other defaults
-CFG.dmth = {'mu'};
+CFG.dmth = {'mu','ml'};
 CFG.use_parfor = false;
 CFG.mus_param = [10 5 8];
 
@@ -135,7 +135,7 @@ for i = 1:numel(rtimes)
         try
             CSL = cs_ship_rm(CSL);
         catch E
-            disp('cs_ship_rm error ...')
+            disp('cs_ship_rm warning ...')
         end
         
         
@@ -208,11 +208,11 @@ for i = 1:numel(rtimes)
         L.ProcessingSteps = {'imageFOLs.m','mle_ap.m','glrt.m'};
         U.K = K; L.K = K;
         
-        U.README = rmfield(U.README,{'Bear','dBear','RunTime','LR','Rm','Idx'});
+        U.README = rmfield(U.README,{'Bear','RunTime','LR','Rm','Idx'});
         U = rmfield(U,{'RngIdx','RunTime','LR','Rm','Idx'});
         
         L = rmfield(L,{'RngIdx','RunTime','LR','Rm','Idx'});
-        L.README = rmfield(L.README,{'Bear','dBear','RunTime','LR','Rm','Idx'});
+        L.README = rmfield(L.README,{'Bear','RunTime','LR','Rm','Idx'});
         
         
         
@@ -245,18 +245,24 @@ iy = find(S.U.RangeBearHead(:,1) > 10 & S.U.RangeBearHead(:,1) < 12);
 plot(S.U.RangeBearHead(iy,2),S.U.RadComp(iy),'*')
 
 % ... with bearing uncertainties
-errorbarx(S.U.RangeBearHead(iy,2),S.U.RadComp(iy),S.U.Err(iy))
+errorbarx(S.U.RangeBearHead(iy,2),S.U.RadComp(iy),S.U.Err(iy));
 
 % MLE processed
 iz = find(S.L.RangeBearHead(:,1) > 10 & S.L.RangeBearHead(:,1) < 12);
 plot(S.L.RangeBearHead(iz,2),S.L.RadComp(iz),'^')
+
+xlabel('Bearing')
+ylabel('Radial Velocity')
+
+legend('SeaSonde Std Proc','HFR CS Proc - MUSIC', ...
+       'HFR CS Proc - MUSIC Uncert','HFR CS Proc - MLE')
 
 
 % look at some spectra
 
  flist = get_file_list([wd '/CSS/'],'CSS*');
 
-for i = 19:25
+for i = 19 %:25
     CS = cs_read(flist{i}); s= cs_plot_map(CS); %pause   
 end
 

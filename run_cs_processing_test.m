@@ -107,8 +107,14 @@ CSL = cs_struct(0);
 
 % Gather some meta data to save later
 CFG.README = 'Meta Data for run_cs_processing_demo.m';
-CFG = struct_pack({'apm_file', 'user_param','tau','cs_type','K','cut'},CFG);
+CFG = struct_pack({'apm_file', 'user_param','tau','cs_type', ...
+                                               'K','cut','Nemit'},CFG);
 
+
+% set other defaults
+CFG.dmth = {'mu','ml'};
+CFG.use_parfor = false;
+CFG.mus_param = [10 5 8];
 
 
 
@@ -134,7 +140,7 @@ for i = 1:numel(rtimes)
         try
             CSL = cs_ship_rm(CSL);
         catch E
-            disp('cs_ship_rm error ...')
+            disp('cs_ship_rm warning ...')
         end
         
         
@@ -160,7 +166,7 @@ for i = 1:numel(rtimes)
         % make sure peakIdx is a cell array (each range cell a cell}
         % Run DOA processing
         % (music or mle, music metrics, music error, etc)
-        S = doa_on_cs(CS,APM,peakIdx,K,Nemit);
+        S = doa_on_cs(CS,APM,peakIdx,K,CFG);
         
         % fill in some meta data, including Range, file name, etc
         S = get_radial_meta(S,APM,rtimes(i),rkm);
@@ -207,11 +213,11 @@ for i = 1:numel(rtimes)
         L.ProcessingSteps = {'imageFOLs.m','mle_ap.m','glrt.m'};
         U.K = K; L.K = K;
         
-        U.README = rmfield(U.README,{'Bear','dBear','RunTime','LR','Rm','Idx'});
+        U.README = rmfield(U.README,{'Bear','RunTime','LR','Rm','Idx'});
         U = rmfield(U,{'RngIdx','RunTime','LR','Rm','Idx'});
         
         L = rmfield(L,{'RngIdx','RunTime','LR','Rm','Idx'});
-        L.README = rmfield(L.README,{'Bear','dBear','RunTime','LR','Rm','Idx'});
+        L.README = rmfield(L.README,{'Bear','RunTime','LR','Rm','Idx'});
         
         
         % write the radial struct to a mat file

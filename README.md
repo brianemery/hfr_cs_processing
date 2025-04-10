@@ -46,10 +46,13 @@ from HFRprogs as dependencies. As mentioned above, this toolbox can use
 imageFOL by Anthony Kirincich [2]. The toolbox includes code obtained
 from CODAR Ocean Sensors for reading cross spectra files. Version 1.5 
 includes data from BML1 provided by William Speiser and John Largier. 
+The latest update includes a few very useful tools from the incredible 
+toolbox M_Map by Rich Pawlowicz [3], which you should download if you
+haven't already.
 
 [1] https://github.com/rowg/hfrprogs  
 [2] https://github.com/akirincich/imageFOLs   
-
+[3] https://www-old.eoas.ubc.ca/~rich/#M_Map
 
 REFERENCES
 
@@ -128,4 +131,8 @@ manuscript (suitable for use with MLE direction finding - more about this at a l
 Updates, improvements and new features related to Emery et al. 2022.
 
 2.1 (1 June 2022)
-Updates including radial metrics, many code fixes and likely bug introductions. 
+Updates including radial metrics, many code fixes and likely bug introductions.
+
+2.2 (10 Apr 2025)
+Many code updates from recent work. These broke the demo which has been updated.
+The code for removing ships is not working at the moment. 
