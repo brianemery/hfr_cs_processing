@@ -39,7 +39,7 @@ Ai.BEAR = BEAR;
 
 
 % Get list of fields to interp
-fn = {'A13R', 'A13I', 'A23R', 'A23I','A33R','A33I','A'}; 
+fn = {'A13R', 'A13I', 'A23R', 'A23I','A33R','A33I'}; 
 
 
 % do the interpolation
@@ -73,6 +73,10 @@ for i = 1:numel(fn)
     catch
     end
 end
+
+% recompute the array matrix
+Ai.A =[];
+Ai.A = get_array_matrix(Ai);
 
 
 % Update processing info

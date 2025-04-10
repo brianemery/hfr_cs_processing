@@ -3,7 +3,7 @@ function M = struct_pack(fn,M)
 % S = struct_pack(varibles, S)
 %
 % INPUT
-% cell array with names of variable 
+% cell array with names of variables, and 
 % (optionally) the struct to append to 
 %
 % EXAMPLE

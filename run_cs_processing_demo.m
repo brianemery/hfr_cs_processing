@@ -19,10 +19,14 @@ function run_cs_processing_demo
 
 % CONFIGURE
 
+% get the directory locating this file to use as the root directory
+% (Has CS, RDL subdirs and APMs in it)
+wd = fileparts( mfilename('fullpath') );
+
 site = 'BML1';  % same as site file name in radial file
 
-% Main Data Folder (Has CS, RDL subdirs and APMs in it)
-wd = '/Users/codar/Downloads/BML1';
+wd = [wd '/data/' site ];
+
 
 % apm file to use
 apm_file = [wd '/APM/MeasPattern_BML1.txt'];

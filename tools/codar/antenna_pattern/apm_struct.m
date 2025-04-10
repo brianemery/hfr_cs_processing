@@ -92,6 +92,7 @@ end
     
 
 APM.ProcessingSteps = {};
+APM.Footer = struct([]);
 
 
 end

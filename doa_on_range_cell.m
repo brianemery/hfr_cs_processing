@@ -57,7 +57,7 @@ if nargin < 6
     mus_param = [10 5 8]; % [20 10 3] or [40 20 2];
 else
     dmth = CFG.dmth;
-    n    = CFG.Nemit;
+    n    = CFG.Nemit; % was Nemitters, but Nemit in run_rng_* mfiles
     mus_param = CFG.mus_param;
     
 end

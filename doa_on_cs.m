@@ -76,9 +76,9 @@ end
 
 
 % GET THE DOAS WITH CONDITIONAL PARFOR
-[~,r] = system('hostname'); % r = 'parfor disabled'
+% [~,r] = system('hostname'); % r = 'parfor disabled'
 
-if strncmp(r,'ekman',5) && ~(CFG.use_parfor) %|| strncmp(r,'yourcomputer',12)
+if ~(CFG.use_parfor) %|| strncmp(r,'yourcomputer',12) ... strncmp(r,'ekman',5) && 
        
     for rc = 1:numel(peakIdx)  
         
@@ -86,7 +86,7 @@ if strncmp(r,'ekman',5) && ~(CFG.use_parfor) %|| strncmp(r,'yourcomputer',12)
         
     end
     
-else % default to parallel for unknown computers
+elseif CFG.use_parfor 
         
     parfor rc = 1:numel(peakIdx) % %PARFOR over different range cells
         

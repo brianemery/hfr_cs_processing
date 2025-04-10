@@ -50,7 +50,8 @@ catch
 end
 view(90,-90)
 
-H(1).leg = legend_append([H(1).h{:}],{'A13M','A23M'});
+%H(1).leg = legend_append([H(1).h{:}],{'A13M','A23M'});
+H(1).leg = legend([H(1).h{:}],{'A13M','A23M'});
 
 xlabel('Degrees CWN')
 
@@ -70,7 +71,7 @@ H(2).h{2} = plot(APM.BEAR,APM.A23P,LS(2));
 xlabel('Bearing CWN')
 ylabel('Phase (deg)')
 
-H(2).leg = legend_append([H(2).h{:}],{'A13M','A23M'});
+H(2).leg = legend([H(2).h{:}],{'A13M','A23M'});
 
 
 

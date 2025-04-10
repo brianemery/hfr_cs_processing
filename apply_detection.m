@@ -1,10 +1,17 @@
-function D = apply_detection(S,em,method) %,tf)
+function D = apply_detection(S,em,method,sfn) %,tf)
 % APPLY DETECTION - apply detection result to extract DOA solutions
 % S = apply_detection(S,em,method) %tf)
 %
 % Reform a DOA struct (containing Radial Data from a single time period)
 % to keep only the DOA solutions that pass the given test (GLRT, SeaSonde,
 % MUSIC-highest, etc.). 
+%
+% NOTE
+% - this assumes that the RangeBearHead field is only one column containing
+% the Range information. Bear is also a field and these will be merged
+% later
+% 
+%
 % 
 % INPUT
 % S  - DOA struct with LR field and subfields for DOA methods (eg. MU, ML)
@@ -14,6 +21,9 @@ function D = apply_detection(S,em,method) %,tf)
 %      a value for the number of emitters even if threshold was not met)?
 %
 % method = char string for documenting the method used
+%
+% sfn  = option other non-standard field names to apply the single column
+%        treatment to. 
 %
 % written for GLRT with the eye toward a general use case, eg any data with
 % the same format (boolean) could be used to reshape the DOA data
@@ -34,9 +44,17 @@ function D = apply_detection(S,em,method) %,tf)
 % where cut appears to be 25 for the SS, and 300 for lera
 % 
 %
+% Typically these run together:
+% - get_radial_meta.m
+% - apply_detection.m
+% - doa_to_radial_struct.m or maybe detection_codar_post_proc.m
 %
 % SEE ALSO
 % compute_emitters_from_lr.m, detection_codar_post_proc.m, run_param_test.m
+%
+% get_radial_meta.m ususally runs before this, see rng_processing_bs.m's
+% subfunction cs_processing, ... then it's followed by
+% doa_to_radial_struct.m ... jeesh
 
 % TO DO
 % ... need to compare these and make sure they get the same thing ...
@@ -94,6 +112,7 @@ end
 
 % apply to top level fields 
 fn = {'RadVel','Err','Apprch','PkPwr','PkWdth','eigValues'}; %,'Params'};
+fn = fn(ismember(fn,fieldnames(S)));
 
 % note that the application of tf here creats a column vector in D, unless
 % the input is a vector!
@@ -109,30 +128,35 @@ for i = 1:numel(fn)
     D.(fn{i}) = apply_to_substruct(S.(fn{i}),tf);
 end
 
+
+
 % These get the single column treatment
 %
 % This arbitrarily has taken the SNR of element 3 - for the ULA and RA8
 % there might be a better way ... 
-
 fn = {'SNR','Dual','RngIdx','Nem','RangeBearHead'}; 
+if nargin > 3, fn = [fn sfn]; end 
+fn = fn(ismember(fn,fieldnames(S))); 
 
-for i = 1:numel(fn)
+D = single_col_treatment(S,D,fn,tf);
+
+if isfield(S,'OtherMatrixVars')
+    fn = {'eigVectors','cov'};
+    fn = fn(ismember(fn,fieldnames(S)));
     
-    dm = repmat(S.(fn{i})(:,1),1,size(tf,2));
-    
-    D.(fn{i}) = dm(tf);
-    
+    D.OtherMatrixVars = single_col_treatment(S.OtherMatrixVars,D.OtherMatrixVars,fn,tf);
 end
 
-
-% Special treatment for Params (and EigVaules?)
+% Special treatment for Params
 % Take each column, repmat it into a 3 column matrix, apply tf, then
 % reconstruct the original matrix format
-dm1 = repmat(S.Params(:,1),1,size(tf,2));
-dm2 = repmat(S.Params(:,2),1,size(tf,2));
-dm3 = repmat(S.Params(:,3),1,size(tf,2));
-
-D.Params = [dm1(tf) dm2(tf) dm3(tf)];
+if ~isempty(S.Params)
+    dm1 = repmat(S.Params(:,1),1,size(tf,2));
+    dm2 = repmat(S.Params(:,2),1,size(tf,2));
+    dm3 = repmat(S.Params(:,3),1,size(tf,2));
+    
+    D.Params = [dm1(tf) dm2(tf) dm3(tf)];
+end
 
 
 % SPECIAL CASE HANDLING
@@ -253,15 +277,30 @@ function D = apply_to_substruct(S,tf)
 
 D = S;
 
-fn = fieldnames(S);
-
-for i = 1:numel(fn)
-    if ~isempty(S.(fn{i}))
-        D.(fn{i}) = S.(fn{i})(tf);
+if isstruct(S)
+        
+    fn = fieldnames(S);
+    
+    for i = 1:numel(fn)
+        if ~isempty(S.(fn{i}))
+            D.(fn{i}) = S.(fn{i})(tf);
+        end
     end
+
 end
 
+end
 
+function D = single_col_treatment(S,D,fn,tf)
+% fn = {'SNR','Dual','RngIdx','Nem','RangeBearHead'}; 
+
+for i = 1:numel(fn)
+    
+    dm = repmat(S.(fn{i})(:,1),1,size(tf,2));
+    
+    D.(fn{i}) = dm(tf);
+    
+end
 
 end
 
@@ -283,6 +322,8 @@ function test_case
 load /m_files/test_data/apply_detection_1.mat
 
 D = apply_detection(S,em,method);
+
+keyboard
  
 % this one has a single range cell, single point with a two emitter
 % solution

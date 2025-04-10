@@ -14,16 +14,16 @@ function A = get_array_matrix(APM)
 % Copyright (C) 2016 Brian Emery
 
 
-
-if isfield(APM,'A') && ~isempty(APM.A)
-    A = APM.A.';
-    
-else
+% 
+% if isfield(APM,'A') && ~isempty(APM.A)
+%     A = APM.A.';
+%     
+% else
     
     % Get the array matrix from the APM struct
     A(1,:) = APM.A13R + 1i*APM.A13I;
     A(2,:) = APM.A23R + 1i*APM.A23I;
     A(3,:) = APM.A33R + 1i*APM.A33I;
     
-end
+% end
 end

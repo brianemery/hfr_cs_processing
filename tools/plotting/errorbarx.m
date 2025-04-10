@@ -33,6 +33,9 @@ function h = errorbarx(x, y, l,u,symbol)
 %     Reference page in Help browser
 %        doc errorbar
 % 
+% NOTE
+% typically the errorbar's full span shows 2 SD, encompasing ~66% of the
+% data, so data +/- sigma
 
 % Changes made 6jun96 - Brian Emery 
 
@@ -77,7 +80,7 @@ end
 % tee = (max(y(:))-min(y(:)))/100;  % make tee .02 y-distance for error bars
 % ... but for layering you get different size tee's. So base it on the axis
 % instead 
-a = axis; tee = (a(4)-a(3))/100;
+a = axis; tee = 1.5 .* (a(4)-a(3))/100; % was 3.5
 
 yl = y - tee;
 yr = y + tee;

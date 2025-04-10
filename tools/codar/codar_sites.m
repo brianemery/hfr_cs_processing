@@ -197,6 +197,7 @@ loc.SDSB=[-119.0378950 33.4760280]; % SBI
 loc.SDSC=[-118.4869000 32.9175500];
 loc.SDSL=[-117.2525000 32.8706000];
 loc.LOMA=[-117.2439530 32.6664040];
+loc.PSLR = [-121.9013 36.3062]; 
 
 
 % WHOI
@@ -207,6 +208,56 @@ loc.SQUB = [ -70.7675833 41.3065667 ];
 loc.NANT = [ -69.9750 41.2506 ];
 loc.MVCO = [ -70.5267667 41.3497833 ];
 loc.LPWR = [-(70+38.41/60) 41+20.904/60 ];
+
+% MARACOOS
+loc.BLCK = [-71.5512 41.1528]; 
+
+
+% NPS/CODAR
+loc.comm=[-122.7281667 37.9118333];
+loc.fort=[-122.5012993 37.7120521];
+    
+% 0 MONT                     ! 1 Site#, Four Char Site Code. Standard
+% 37°32.023'N,122°31.153'W   ! 2 Latitude,Longitude of Receiver         
+% 298                        ! 3 Bearing of Antenna Loop1 CW North
+% 34 2.9257 2.9257           ! 4 Process Range Cells, 1rst Range (km), Range Step (km) from SSC
+%Origin:  37.5337167 -122.5192167
+loc.mont=[-122.5192167 37.5337167];
+%TransmitterLocation:  37.8720962 -122.5986618
+% MONT uses the tx from SLID for bistatic:
+loc.slid=[-122.5986618 37.8720962];
+
+% 0 PESC ""                    ! 1 Site#, 4Char SiteCode,"Site Desc."
+% 37°15.149'N,122°24.994'W     ! 2 Receiver Latitude,Longitude
+loc.pesc=[-122-(24.994/60) 37+(15.149/60)];
+loc.bigc=[-122.2742 37.0894]; % from HFRNET
+loc.psur=[-121.9013 36.3058]; % from HFRNET
+loc.drak=[-122.9610667 38.0278333];
+loc.pilr=[-122.4994 37.4967];
+loc.ragg=[-121.3363 35.7874];
+
+
+% Monterey bay sites
+loc.scrz=[-122.0661000, 36.9492167];
+loc.gcyn=[-121.9222151,36.4394508];
+loc.ppin=[-121.9536  36.6367833];
+loc.mlml=[-121.7879167  36.8036667];
+loc.npgs=[-121.8727833  36.6027833];
+
+% NOR CAL and OR
+loc.PAFS = [-123.7278 38.9284] ;
+loc.PREY = [ -122.9891 38.0472] ; %13
+loc.PSG1 = [-124.2548 41.7845] ;
+loc.BMLR = [-123.073617 38.319483	] ;
+loc.GCVE = [-123.3315 38.5672] ;
+loc.WSH1 = [-124.1175 44.1615] ;
+loc.CBL1 = [-124.5655 42.836667	];
+loc.SHEL = [ -124.078867	40.033367];
+loc.TRIN = [ -124.157783	41.073567];
+loc.BRAG = [ -123.816117	39.438017];
+loc.SMOA = [ -124.2188 40.7688];
+
+
 
 
 % THIS MUST BE LAST

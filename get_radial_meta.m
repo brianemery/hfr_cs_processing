@@ -3,7 +3,14 @@ function R = get_radial_meta(R,APM,ftime,rkm)
 %
 % Gets meta data and formats radial struct per HFRP formatting.
 %
-% Called by run_cs_processing*
+% Called by run_cs_processing*, but this is also used by Radar Simulation
+% code on not-real data (eg check_plot_dales_stuff.m).
+%
+% Typically these run together:
+% - get_radial_meta.m
+% - apply_detection.m
+% - doa_to_radial_struct.m or maybe detection_codar_post_proc.m
+
 
 % Copyright (C) 2019 Brian Emery
 
@@ -11,7 +18,10 @@ function R = get_radial_meta(R,APM,ftime,rkm)
 
 % CONVERT DOA STRUCT TO HFRP RADIAL STRUCT
 
-R(1).Type = APM.Type(1:4);
+% special case
+if nargin < 4, rkm =[]; end
+
+R(1).Type = APM.Type(1:end);
 
 R.SiteName = APM.SiteName;
 
@@ -30,9 +40,12 @@ R.RangeBearHead = [];
 
 if ~isempty(R.Bear)
     
-    % Generate Range
-    R.RangeBearHead(:,1) = R.RngIdx(:,1) * rkm;
-    
+    if ~isempty(rkm)
+        % Generate Range
+        R.RangeBearHead(:,1) = R.RngIdx(:,1) * rkm;
+    else
+        try R.RangeBearHead(:,1) = R.Range; catch, end
+    end
     
     % CUSTOM FOR GLRT TESTING
     fn = fieldnames(R.Bear);
@@ -44,13 +57,16 @@ if ~isempty(R.Bear)
     
     
     % Idempodent fix I hope
-    R.LonLatUnits = R.LonLatUnits(1,:);
-    R.RangeBearHeadUnits = R.RangeBearHeadUnits(1,:);
+    R.LonLatUnits = {'Decimal Degrees','Decimal Degrees'};
+    R.RangeBearHeadUnits = {'km','Degrees_ccw_from_east','Degrees_ccw_from_east'};
     
 end
 
-% final cleanup - stuff not used on real data
-R = rmfield(R,{'RmsBrgErr','BrgDiff','RomsBrg'});
+
+
+% % final cleanup - stuff not used on real data
+% % .. FUTURE maybe remove these if empty?
+% R = rmfield(R,{'RmsBrgErr','BrgDiff','RomsBrg'});
 
 % need this
 R.ProcessingSteps{1,end+1} = 'get_radial_meta';

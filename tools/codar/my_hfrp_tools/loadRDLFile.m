@@ -319,7 +319,8 @@ function R = get_ancillary(vv,Data,R)
 
 % List possible field names to get
  fn = setdiff(vv,{'LOND','LATD','RNGE','BEAR','HEAD','VELO', ...
-                  'ETMP','STDV','VELU','VELV','XDST','YDST'});
+                  'ETMP','STDV','VELU','VELV', ...
+                  'XDST','YDST'});
 
 % loop over the field names, insert the data            
 for m = 1:numel(fn)

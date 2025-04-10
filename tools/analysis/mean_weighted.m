@@ -16,6 +16,10 @@ function abar = mean_weighted(a,wt)
 % Copyright (C) 2009-2010 Brian M. Emery
 % Jun 2009
 % Jul 2012 - added test case, expanded for matricies
+%
+% NOTE 2023 See:
+% https://en.wikipedia.org/wiki/Weighted_arithmetic_mean
+
 
 % INPUTS
 

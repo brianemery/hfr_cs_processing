@@ -108,7 +108,7 @@ switch NM.Type
 
     
     case {'RDLi','RDLm','RDLy','ELTm','ELTi','TRAK','TOTL','SEAS'}
-        stime=datenum(fileName(end-16:end),'yyyy_mm_dd_HHMM'); 
+        stime=datenum(fileName(end-14:end),'yyyy_mm_dd_HHMM'); 
         NM.SiteName=fileName(6:9);
                
     case {'Rng','Lvl'}
@@ -116,8 +116,16 @@ switch NM.Type
         NM.SiteName=fileName(5:8);
         
     case {'CSA','CSS','Radz','Rads'} 
-        stime=datenum(fileName(10:22),'yy_mm_dd_HHMM');
+        % catch early CS files with blanks and colons
+        fileName = regexprep(fileName,{' ',':'},'_');
+
+        if length(fileName) < 22
+            stime=datenum(fileName(end-10:end),'yymmdd_HHMM');
+        else
+            stime=datenum(fileName(10:22),'yy_mm_dd_HHMM');
+        end
         NM.SiteName=fileName(5:8);
+
 
     case {'CSQ'} 
         stime=datenum(fileName(10:24),'yy_mm_dd_HHMMSS');
@@ -170,7 +178,8 @@ end
 function NM = test_case
 % TEST CODE 
 
-fn={'STAT_Rfg1_2007_07_08.rdt', ...
+fn={'CSA arg1 02:01:17 2200', ...
+    'STAT_Rfg1_2007_07_08.rdt', ...
     'LOOP_cop1_100723_211027.loop', ...
     'RDLm_Rfg1_2008_08_29_1900.ruv', ...
     'TOTL_PWSS_2009_07_15_2200.tuv', ...

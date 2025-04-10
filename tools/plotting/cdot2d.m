@@ -37,6 +37,9 @@ function [ax,p] = cdot2d(x,y,cval,dotsize,MapColor,crange)
 % [ax,p] = cdot2d ... outputs colorbar axis handle and handles for the many 
 %          dots.
 %
+% EXAMPLE
+% [ax,p] = cdot2d(RFG.Ra.PwrKF(iz),RFG.Rr.PwrKF(iz),RFG.Ra.N(iz),6,'parula',[1 30]);
+%
 % SEE ALSO: colordot.m
 
 

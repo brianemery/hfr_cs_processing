@@ -15,6 +15,7 @@ if nargin<3, opt=0; end
 
 if ischar(cel), cel = cellstr(cel); end
 
+
 % get info if there is a pre-existing legend: (outm is cell)
 [legh,objh,outh,outm] = legend;
 

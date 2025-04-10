@@ -230,7 +230,7 @@ APM.README.loop1Brg_Units = 'degCWN';
 APM.Units.BEAR = 'degCWN';
 
 % Add footer 
-APM.Footer.Names  = names;
+APM.Footer(1).Names  = names;
 APM.Footer.Values = values;
 APM.Footer.Orig = footer;
 

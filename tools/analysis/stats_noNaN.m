@@ -5,7 +5,9 @@ function [xbar,stdev,hi,lo,med,n]=stats_noNaN(x)
 % matrix after removing NaN's. Also returns number of
 % non-NaN values used in the calc.
 %
-% See also mean_noNaN.m
+% SEE ALSO
+% mean_noNaN.m
+% make_stats_table.m
 
 % Copyright (C) 1999-2010 Brian M. Emery
 % Brian Emery 13Sept99

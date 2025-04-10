@@ -53,14 +53,14 @@ elseif site_lat <= lat_o
 	northkm=kmN_site-(delta_N/1000);
 end
 
-% check that the outputs are column vectors
-if ~isempty(eastkm)
-	eastkm=eastkm(:);
-end 
-
-if ~isempty(northkm)
-	northkm=northkm(:);
-end 
+% % check that the outputs are column vectors
+% if ~isempty(eastkm)
+% 	eastkm=eastkm(:);
+% end 
+% 
+% if ~isempty(northkm)
+% 	northkm=northkm(:);
+% end 
 
 return
 

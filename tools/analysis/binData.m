@@ -1,6 +1,6 @@
-function [avex,avey,N,stdev,stats]=binData(x,y,binWidth,binCenters,wts)
+function [avex,avey,N,stdev,stats]= binData(x,y,binWidth,binCenters,wts,isgauss)
 % BIN DATA - Bin Average over y data using binWidth 
-% [avex,avey,N,stdev,stats]=binData(x,y,binWidth,binCenters,weights)
+% [avex,avey,N,stdev,stats]=binData(x,y,binWidth,binCenters,weights,isgauss)
 %
 % Produces the average of x in each bin defined by y +/- YbinWidth/2. Thus,
 % YbinWidth has same units as y. 
@@ -16,6 +16,8 @@ function [avex,avey,N,stdev,stats]=binData(x,y,binWidth,binCenters,wts)
 %   vectors can specify any bin width and center locations.
 % - optional 5th input: weights for computing weighted average, same size
 %   the x and y inputs
+% - Gaussian window uses the binWidth/3 as the stdev of the Gaussian (see
+%   subfunction).
 %
 % A final output, 'stats' is an optional structure containing the hi, low
 % and median values in each bin.
@@ -67,11 +69,14 @@ function [avex,avey,N,stdev,stats]=binData(x,y,binWidth,binCenters,wts)
 %  SORT OUT INPUTS
 % --------------------------------------------------------- 
 
+
 % test case
 if strcmp(x,'--t')
     test_case, return
 end
 
+% eject if empty
+if isempty(x), [avex,avey,N,stdev,stats] = deal([]); return, end
 
 if size(x,2)== 1 || size(x,2) ~= length(y) 
     x = x'; 
@@ -134,11 +139,17 @@ elseif ~isempty(wts)
     end
 end
 
-[avex,avey,N,stdev,stats]=binData_new(x,y,binWidth,binCenters,wts);
+if nargin < 6
+    % gaussian  weighting defaults to off
+    isgauss = false;
+end
+
+
+[avex,avey,N,stdev,stats]=binData_new(x,y,binWidth,binCenters,wts,isgauss);
 
 end
 
-function [avex,bc,N,stdev,stats]=binData_new(x,y,binWidth,bc,wts)
+function [avex,bc,N,stdev,stats]=binData_new(x,y,binWidth,bc,wts,isgauss)
 % BIN DATA NEW
 % newer version of bin data for variable bin widths
 
@@ -161,8 +172,23 @@ for i=1:length(bc)
     [avex(:,i),stdev(:,i),hi(:,i),lo(:,i),med(:,i),N(:,i)] = stats_noNaN(x(:,idx));
     
     % compute the weighted mean if given weights
-    if ~isempty(wts)     
+    if ~isempty(wts) && ~isgauss   
         avex(:,i) = mean_weighted(x(:,idx),wts(:,idx));
+        
+        % * ADD WEIGHTED STD HERE TOO *
+        % Note that matlab's std appears to compute weighted STD but I cant
+        % seem to get it to get the right answer .. which means I'm
+        % treading on thin ice I think ...
+        
+    elseif ~isempty(wts) && isgauss && ~isempty(idx)
+       
+        % (rely on stats_noNaN to provide a NaN result if idx is empty)
+        
+        % Gaussian weigting applied to the weights in y direction ... this
+        % is being coded for radial HFR data so some of the decisions may
+        % not generalize. 
+        avex(:,i) = mean_gaussian_weighted(y(idx),x(:,idx),wts(:,idx),bc(i),binWidth(i));
+                
     end
     
     % save the indexing
@@ -195,6 +221,59 @@ end
 % plot(bc,avex,LS)
 % 
 % keyboard
+
+end
+
+function avex = mean_gaussian_weighted(t,x,wts,bc,bw)
+% MEAN GAUSSIAN WEIGHTED
+%
+% Sort of. This takes the weights (eg SNR) and then applies a gaussian to
+% them based on the location of t relative to bc. Wts can be all ones
+%
+% Assumes that bw is the same units as t, eg, degrees (not indecies)
+%
+% Even if things are on the edge of the window and get really small weights
+% this will still produce a similar result ... so yeah
+% wts.*gwts(:)'
+% 
+% ans =
+% 
+%     0.0029    0.0004
+% 
+% avex = mean_weighted(x,wts.*gwts(:)')
+% 
+% avex =
+% 
+%    -5.2933
+% 
+% avex = mean_weighted(x,wts)
+% 
+% avex =
+% 
+%    -5.2933
+% 
+
+keyboard % I am not useing gausswin correctly
+
+% also:
+% "you expect that the Gaussian is essentially limited to the mean plus or
+% minus 3 standard deviations, "
+% stdev = (N-1)/(2*alpha);
+% ... so take the window, divide be 3, use that for stdev and compute
+% alpha: (in bw units, not N?)
+%stdev = bw/3; alpha = 
+
+% the 5 here needs to be adjustable. Note that it's not normalized
+% if bw is not odd, the interp setup gets challenging
+gw = gausswin(bw,5); % w = gausswin(N,alpha);
+
+% get integer window
+hwin = (bw-1)/2;
+        
+gwts = interp1( (bc-hwin):(bc+hwin) ,gw,t);
+
+% row vectors here
+avex = mean_weighted(x,wts.*gwts(:)');
 
 end
 
@@ -235,6 +314,44 @@ end
 
 function test_case
 % TEST CASE - fairly robust test case to check that this is working ...
+
+
+% GAUSSIAN (OR OTHER WINDOW) % WEIGHTED BIN AVERAGE
+%
+% I want it to be super obvious if this is working so let's make an impulse
+% function and average that
+t = 1:180;
+x = ones(size(t));
+x(90) = 50;
+x(5) = 50;
+
+figure
+plot(t,x,'-o'), hold on
+
+%  bin centers
+bc = 1:180;
+
+% bin width is 5^o
+bw = 5*ones(size(bc));
+
+
+% compute means using weight code, with all ones as weights
+% this checks execution
+[avex,avet,N,stdev,stats]=binData(x,t,bw,bc,ones(1,size(x,2)));
+
+plot(avet,avex,'-x')
+
+% No compute means using weight code, with all ones as weights
+% and a gaussian window
+
+bw = 10*ones(size(bc));
+[avex,avet,N,stdev,stats]=binData(x,t,bw,bc,ones(1,size(x,2)),1);
+
+plot(avet,avex,'.',avet,avex,'-')
+
+keyboard
+
+
 
 % WEIGHTED BIN AVERAGE
 

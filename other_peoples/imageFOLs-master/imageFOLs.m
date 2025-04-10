@@ -199,7 +199,7 @@ Bragg_en=[mean(gain3(:,iFBragg(1)-N:iFBragg(1)+N),2) mean(gain3(:,iFBragg(2)-N:i
 g=Bragg_en;
 gg=[ones(floor(f_l/2),1)*g(1,:); g; ones(floor(f_l/2),1)*g(end,:)];  %pad ends with 1,end index pre conv.
 lBragg_en=[conv(gg(:,1),filt_shape,'valid') conv(gg(:,2),filt_shape,'valid') ];
-Bragg_en_range=[max(lBragg_en)-min(lBragg_en)];   %the range of mean Bragg energy
+Bragg_en_range=[max(lBragg_en,[],1)-min(lBragg_en,[],1)];   %the range of mean Bragg energy (BE update to apply to cols)
 Bragg_en_ratio=[Bragg_en_range(1)./Bragg_en_range(2) Bragg_en_range(2)./Bragg_en_range(1) ];
 
 %%% plot result of this RC-dependent function, if goplot(2)==1

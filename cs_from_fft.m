@@ -1,14 +1,14 @@
-function CS = cs_from_fft(fftn,CFG) %V1,V2,V3,CFG)
+function CS = cs_from_fft( fftm,CFG) %V1,V2,V3,CFG)
 % FORM THE CROSS SPECTRA - from FFTs
 %
 % INPUTS
-% fftn     - The N rows by length(FFT) columns 
+%  = fftm     - The N rows by length(FFT) columns 
 % V1,V2,V3 - Doppler spectra, ie the output of the FFT performed on the
 %            Range data 
 % CFG      - Optional configuration specifying some of the outputs
 %
 % This function was made for simulation data, which assumes one range cell
-% at at time. Thus the input fftn is # antennas x # length(fft)
+% at at time. Thus the input  = fftm is # antennas x # length(fft)
 
 
 % NOTES
@@ -20,10 +20,11 @@ function CS = cs_from_fft(fftn,CFG) %V1,V2,V3,CFG)
 % them) as the estimate of the PSD."
 %
 % So the Auto spectra are the PSD!
-
+% (from https://dsp.stackexchange.com/questions/4691/)
 
 % check for test case
-if strcmp('--t',fftn), test_case, return, end
+if strcmp('--t', fftm), test_case, return, end
+
 
 
 % set defaults
@@ -33,7 +34,7 @@ if nargin < 2
 end
 
 % get number of antennas
-m = size(fftn,1);
+m = size(fftm,1);
 
 if m == 3
     
@@ -67,12 +68,12 @@ end
 if m == 3
     
     % use previous method and formats ... wants columns
-    CS = old_way(fftn(1,:).',fftn(2,:).',fftn(3,:).',CS);
+    CS = old_way( fftm(1,:).', fftm(2,:).', fftm(3,:).',CS);
     
 else
     
     % new way - arbitrary arrays
-    CS = new_way(fftn,CS);
+    CS = new_way( fftm,CS);
     
     
 end
@@ -81,7 +82,7 @@ end
 % add couple things
 
 % Quality array from zero to one in value.
-[ CS.spectraQualNum ] =  deal(zeros(size(fftn,2),1)); 
+[ CS.spectraQualNum ] =  deal(zeros(size( fftm,2),1)); 
 
 CS.rdCSErr = 0;
 CS.FileName = '';
@@ -93,7 +94,7 @@ if CFG.output_fft
        
    % need to fix this .. or punt!
    %  CS.V1 = V1;
-    CS.fftn = fftn;
+    CS. fftm =  fftm;
     
 end
 
@@ -114,14 +115,14 @@ CS.antenna23CrossSp = V2.*conj(V3)  ;
 
 end
 
-function CS = new_way(fftn,CS)
+function CS = new_way( fftm,CS)
 % 
 
 % get number of antennas
-m = size(fftn,1);
+m = size( fftm,1);
 
 % Apply transpose to row shape (CS are nfft x nRC) typically
-fftn = fftn.'; 
+ fftm =  fftm.'; 
 
 
 % get field names (could also read these?), and corresponding row,col
@@ -133,12 +134,12 @@ for i = 1:length(I)
         % ... ok, very slight differences from old way unless I do this
         if I(i) == J(i)
             
-            CS.(fn{i}) = abs(fftn(:,I(i))).^2 ;
+            CS.(fn{i}) = abs( fftm(:,I(i))).^2 ;
             
         else
             
             % now calc auto and cross products
-            CS.(fn{i}) = fftn(:,I(i)) .* conj(fftn(:,J(i))) ;
+            CS.(fn{i}) =  fftm(:,I(i)) .* conj( fftm(:,J(i))) ;
             
         end
 end
@@ -160,14 +161,13 @@ function test_case
 % load data
 load  /m_files/test_data/cs_from_fft.mat
 
-
 % Create data using old way
-CSo = old_way(fftn(1,:).',fftn(2,:).',fftn(3,:).',CS);
+CSo = old_way( fftm(1,:).', fftm(2,:).', fftm(3,:).',CS);
 
 fno = cs_fieldnames(CSo);
 
 % Create data using new way
-CSn = new_way(fftn,CS);
+CSn = new_way( fftm,CS);
 
 
 % compare

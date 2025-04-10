@@ -30,8 +30,12 @@ end
 % convert to ccwE
 R.RangeBearHead(:,3) = cwN2ccwE(R.RangeBearHead(:,3));
 
-% set units
-R.RangeBearHeadUnits{3} = 'deg ccwE';
+% % set units %THIS DOESNT WORK WITH the recursion code
+% if ~isfield(R,'RangeBearHeadUnits')
+%     R.RangeBearHeadUnits ={'km','?','deg ccwE'};
+% else
+%     R.RangeBearHeadUnits{3} = 'deg ccwE';
+% end
 
 
 end

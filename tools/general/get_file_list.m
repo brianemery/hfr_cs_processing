@@ -1,8 +1,11 @@
-function flist = get_file_list(wd,fstr)
+function flist = get_file_list(wd,fstr,dpth)
 % GET FILE LIST - get cell list of files including path
 % flist = get_file_list(wd,fstr)
 % 
-% return empty cell if no files found
+% return empty cell if no files found. 
+%
+% Optionally pass a third arguement, such as '-maxdepth 1' to limit
+% recursion. 
 %
 % wd can be a cell list of directories, but there is no need to 
 % list the sub directories since this function handles the recursion
@@ -46,11 +49,14 @@ function flist = get_file_list(wd,fstr)
 % 
 % meas = meas(tf);
 
-
+% set verbosity boolean
+vb = 1;
 
 
 % check for test case
 if strcmp('--t',wd), test_case, return, end
+
+if nargin < 3, dpth =[];  end  
 
 
 try
@@ -79,7 +85,7 @@ try
             
             % use bash's find to do recursion and generate list
             % sort is needed for linux file systems
-            [status,result] = system(['find ' wd{i} ' -name ' '''' fstr ''' | sort']);
+            [status,result] = system(['find ' wd{i} ' ' dpth ' -name ' '''' fstr ''' | sort']);
             
             
             % concat with previous, split results of find using eol
@@ -92,7 +98,7 @@ try
             
         else
             
-            disp([wd{i} ': Directory Not Found'])
+            if vb, disp([wd{i} ': Directory Not Found']), end
             
         end
         
@@ -152,7 +158,7 @@ if ~isempty(flist)
     flist = flist(tf);
     
 else
-    disp('Warning: flist is empty ...')
+    if vb, disp('Warning: flist is empty ...'), end
     
 end
 

@@ -19,9 +19,11 @@ function t = fnames_to_times(flist,nmstr,dstr)
 %
 % ANOTHER EXAMPLE
 %
-% Custom code to match RDL_i*AGL1 for example (ie dont worry about RA)
+% % Custom code to match RDL_i*AGL1 for example (ie dont worry about RA)
 %  nmstr = [RDLstr '.*' site '_']
-
+%
+% % two sites in the list:
+% retimes = fnames_to_times(reflist,{'RDLe_ssd1_','RDLe_cop1_'},'yyyy_mm_dd_HHMM')
 
 
 

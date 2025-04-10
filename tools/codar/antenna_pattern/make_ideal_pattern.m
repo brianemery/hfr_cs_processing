@@ -58,8 +58,11 @@ APM.A23R = cos( (bear-(loop1Brg-90))*pi/180 );
 % Monopole not usually used but put it in anyway
 APM.A33R = ones(size(bear));
 
-% Imaginary parts
-[APM.A13I, APM.A23I, APM.A33I] = deal(zeros(size(bear)));
+% Imaginary parts, Q factor stuff
+fn = {'A13I','A23I','A33I','A13RQ','A13IQ','A23RQ','A23IQ'}; 
+for i = 1:numel(fn)
+    APM.(fn{i}) = zeros(size((bear))); 
+end
 
 
 % Mag and phase
@@ -73,6 +76,8 @@ APM.loop1Brg = loop1Brg;
 APM.Type = 'Ideal Antenna Pattern';
 APM.README.BEAR = 'deg cwN';
 APM.Units.BEAR = 'deg cwN';
+
+APM.ProcessingSteps = {mfilename};
 
 end
 
